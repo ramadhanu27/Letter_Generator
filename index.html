@@ -5,35 +5,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generator Surat PDF</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
-        <h1 class="text-2xl font-bold mb-4 text-center">Generator Surat PDF</h1>
-        <form id="form-surat" class="space-y-4">
-            <label class="block">
-                <span class="font-semibold">Jenis Surat</span>
-                <select id="jenis-surat" class="mt-1 block w-full border rounded p-2">
-                    <option value="pernyataan">Surat Pernyataan</option>
-                    <option value="izin">Surat Izin</option>
-                    <option value="kuasa">Surat Kuasa</option>
-                </select>
-            </label>
-            <div id="input-fields"></div>
-            <label class="block">
-                <span class="font-semibold">Lampiran (Foto/Gambar)</span>
-                <input type="file" id="lampiran-file" accept="image/*" class="mt-1 block w-full border rounded p-2" />
-            </label>
-            <div id="lampiran-preview" class="mt-2"></div>
-            <button type="button" id="generate-btn"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Generate PDF</button>
-        </form>
-        <div class="mt-8">
-            <h2 class="text-lg font-semibold mb-2">Preview Surat</h2>
-            <div id="preview" class="bg-gray-50 p-4 rounded border text-sm whitespace-pre-line"></div>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen py-8 px-4">
+    <div class="container mx-auto max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-fade-in">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                Generator Surat PDF
+            </h1>
+            <p class="text-gray-600">Buat surat resmi dengan mudah dan cepat</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Form Section -->
+            <div class="form-section rounded-xl shadow-lg p-6 lg:p-8 animate-slide-up card">
+                <div class="flex items-center mb-6 pb-4 border-b border-gray-100">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-edit text-blue-600 text-lg"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Form Input</h2>
+                </div>
+
+                <form id="form-surat" class="space-y-6">
+                    <div class="space-y-3">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-list-ul mr-2 text-gray-400"></i>
+                            Jenis Surat
+                        </label>
+                        <select id="jenis-surat"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white">
+                            <option value="pernyataan">📄 Surat Pernyataan</option>
+                            <option value="izin">📝 Surat Izin</option>
+                            <option value="kuasa">🤝 Surat Kuasa</option>
+                        </select>
+                    </div>
+
+                    <div id="input-fields" class="space-y-4"></div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-paperclip mr-2 text-gray-400"></i>
+                            Lampiran (Foto/Gambar)
+                        </label>
+                        <div class="relative">
+                            <input type="file" id="lampiran-file" accept="image/*"
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                        </div>
+                    </div>
+
+                    <div id="lampiran-preview" class="image-preview hidden"></div>
+
+                    <button type="button" id="generate-btn"
+                        class="btn-primary w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i>
+                        <span id="btn-text">Generate PDF</span>
+                        <i id="loading-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section rounded-xl shadow-lg p-6 lg:p-8 animate-slide-up card">
+                <div class="flex items-center mb-6 pb-4 border-b border-gray-100">
+                    <div class="bg-green-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-eye text-green-600 text-lg"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Preview Surat</h2>
+                </div>
+                <div id="preview"
+                    class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-200 text-sm whitespace-pre-line min-h-96 leading-relaxed">
+                    <div class="text-gray-400 text-center py-8">
+                        <i class="fas fa-file-alt text-4xl mb-4"></i>
+                        <p>Preview surat akan muncul di sini setelah Anda mengisi form</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>

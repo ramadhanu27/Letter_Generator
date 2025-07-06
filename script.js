@@ -50,24 +50,61 @@ const templates = {
 
 function renderInputs(type) {
   inputFields.innerHTML = "";
-  inputConfigs[type].forEach((field) => {
+  inputConfigs[type].forEach((field, index) => {
     const wrapper = document.createElement("div");
-    wrapper.className = "mb-2";
+    wrapper.className = "space-y-3 animate-slide-up";
+    wrapper.style.animationDelay = `${index * 0.1}s`;
+
     const label = document.createElement("label");
-    label.className = "block font-medium";
-    label.textContent = field.label;
+    label.className = "flex items-center text-sm font-medium text-gray-700";
+
+    // Add icons for different field types
+    const icon = document.createElement("i");
+    icon.className = "mr-2 text-gray-400";
+    switch (field.type) {
+      case "text":
+        if (field.id.includes("nama")) {
+          icon.className += " fas fa-user";
+        } else if (field.id.includes("alamat")) {
+          icon.className += " fas fa-map-marker-alt";
+        } else if (field.id.includes("kelas")) {
+          icon.className += " fas fa-graduation-cap";
+        } else if (field.id.includes("tempat")) {
+          icon.className += " fas fa-birthday-cake";
+        } else {
+          icon.className += " fas fa-edit";
+        }
+        break;
+      case "textarea":
+        icon.className += " fas fa-align-left";
+        break;
+      case "date":
+        icon.className += " fas fa-calendar-alt";
+        break;
+      default:
+        icon.className += " fas fa-edit";
+    }
+
+    label.appendChild(icon);
+    label.appendChild(document.createTextNode(field.label));
+
     let input;
     if (field.type === "textarea") {
       input = document.createElement("textarea");
-      input.className = "w-full border rounded p-2";
-      input.rows = 3;
+      input.className = "form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none";
+      input.rows = 4;
+      input.placeholder = `Masukkan ${field.label.toLowerCase()}...`;
     } else {
       input = document.createElement("input");
       input.type = field.type;
-      input.className = "w-full border rounded p-2";
+      input.className = "form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200";
+      if (field.type === "text") {
+        input.placeholder = `Masukkan ${field.label.toLowerCase()}...`;
+      }
     }
     input.id = field.id;
     input.name = field.id;
+
     wrapper.appendChild(label);
     wrapper.appendChild(input);
     inputFields.appendChild(wrapper);
@@ -91,7 +128,21 @@ function getInputValues(type) {
 function updatePreview() {
   const type = jenisSurat.value;
   const values = getInputValues(type);
-  preview.textContent = templates[type](values);
+  const previewText = templates[type](values);
+
+  // Check if all fields are empty
+  const hasContent = Object.values(values).some((value) => value && value.trim() !== "");
+
+  if (!hasContent) {
+    preview.innerHTML = `
+      <div class="text-gray-400 text-center py-8">
+        <i class="fas fa-file-alt text-4xl mb-4"></i>
+        <p>Preview surat akan muncul di sini setelah Anda mengisi form</p>
+      </div>
+    `;
+  } else {
+    preview.textContent = previewText;
+  }
 }
 
 jenisSurat.addEventListener("change", () => {
@@ -110,174 +161,313 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-generateBtn.addEventListener("click", () => {
-  const type = jenisSurat.value;
-  const values = getInputValues(type);
-  const doc = new window.jspdf.jsPDF();
-  doc.setFont("Times", "Roman");
-  doc.setFontSize(12);
+generateBtn.addEventListener("click", async () => {
+  // Show loading state
+  const btnText = document.getElementById("btn-text");
+  const loadingSpinner = document.getElementById("loading-spinner");
 
-  let y = 20;
-  function addLine(text, indent = 0) {
-    doc.text(text, 15 + indent, y);
-    y += 8;
-  }
+  btnText.textContent = "Generating...";
+  loadingSpinner.classList.remove("hidden");
+  generateBtn.disabled = true;
+  generateBtn.classList.add("opacity-75", "cursor-not-allowed");
 
-  // Tentukan posisi X tetap untuk nilai setelah titik dua
-  const LABELS = [
-    "Nama",
-    "Tempat/Tanggal Lahir",
-    "Alamat",
-    "Kelas",
-    "Nama Pemberi Kuasa",
-    "Nama Penerima Kuasa"
-  ];
-  const tempDoc = new window.jspdf.jsPDF();
-  const maxLabelWidth = Math.max(...LABELS.map(l => tempDoc.getTextWidth(l + ':')));
-  const valueX = 15 + maxLabelWidth + 5;
+  try {
+    // Add small delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-  function addLabelValue(label, value) {
-    const labelText = label + ':';
-    const labelX = 15;
-    const maxValueWidth = 180 - valueX; // 180 = lebar halaman A4 jsPDF - margin
-    if (doc.getTextWidth(value) > maxValueWidth) {
-      // Nilai panjang, wrap ke bawah label
-      doc.text(labelText, labelX, y);
-      const lines = doc.splitTextToSize(value, 180 - labelX - 10);
-      lines.forEach((line, idx) => {
-        doc.text(line, labelX + 10, y + (idx === 0 ? 8 : 8 * (idx + 1)));
+    const type = jenisSurat.value;
+    const values = getInputValues(type);
+
+    // Validate required fields
+    const requiredFields = inputConfigs[type].filter((field) => field.type !== "file");
+    const emptyFields = requiredFields.filter((field) => !values[field.id] || values[field.id].trim() === "");
+
+    if (emptyFields.length > 0) {
+      alert(`Mohon lengkapi field: ${emptyFields.map((f) => f.label).join(", ")}`);
+      return;
+    }
+
+    const doc = new window.jspdf.jsPDF();
+    doc.setFont("Times", "Roman");
+    doc.setFontSize(12);
+
+    // Konstanta untuk formatting yang konsisten
+    const MARGIN_LEFT = 20;
+    const LINE_HEIGHT = 6;
+    const PARAGRAPH_SPACING = 4;
+    const SECTION_SPACING = 8;
+    const PAGE_WIDTH = 190; // A4 width minus margins
+
+    let y = 25; // Starting position
+
+    function addLine(text, indent = 0, spacing = LINE_HEIGHT) {
+      if (text.trim() === "") {
+        y += spacing;
+        return;
+      }
+      checkPageBreak(spacing + 5);
+      doc.text(text, MARGIN_LEFT + indent, y);
+      y += spacing;
+    }
+
+    function addParagraph(text, indent = 0) {
+      if (!text || text.trim() === "") return;
+
+      const maxWidth = PAGE_WIDTH - MARGIN_LEFT - indent - 10;
+      const lines = doc.splitTextToSize(text, maxWidth);
+
+      checkPageBreak(lines.length * LINE_HEIGHT + PARAGRAPH_SPACING + 10);
+
+      lines.forEach((line, index) => {
+        doc.text(line, MARGIN_LEFT + indent, y);
+        y += LINE_HEIGHT;
       });
-      y += 8 * (lines.length + 1);
-    } else {
-      // Nilai pendek, tetap di kolom kanan
-      doc.text(labelText, labelX, y);
-      doc.text(value, valueX, y);
-      y += 8;
+      y += PARAGRAPH_SPACING + 2; // Extra spacing after paragraphs
     }
-  }
 
-  if (type === "pernyataan") {
-    addLine("SURAT PERNYATAAN", 0);
-    y += 4;
-    addLine("");
-    addLine("Saya yang bertanda tangan di bawah ini:");
-    addLabelValue("Nama", values.nama);
-    addLabelValue("Tempat/Tanggal Lahir", values.tempatTanggalLahir);
-    addLabelValue("Alamat", values.alamat);
-    y += 4;
-    addLine("");
-    addLine("Dengan ini menyatakan bahwa:");
-    doc.text(values.pernyataan, 15, y);
-    y += 12;
-    addLine("");
-    addLine("Demikian surat pernyataan ini dibuat dengan sebenar-benarnya.");
-    y += 4;
-    addLine("");
-    if (values.tanggal && values.tanggal.trim() !== "") {
-      addLine(values.tanggal);
-      y += 8;
+    // Hitung lebar maksimal label untuk alignment yang konsisten
+    const ALL_LABELS = ["Nama", "Tempat/Tanggal Lahir", "Alamat", "Kelas", "Nama Pemberi Kuasa", "Nama Penerima Kuasa"];
+
+    // Gunakan font yang sama untuk mengukur
+    doc.setFont("Times", "Roman");
+    doc.setFontSize(12);
+
+    const maxLabelWidth = Math.max(...ALL_LABELS.map((label) => doc.getTextWidth(label + ":")));
+    const VALUE_START_X = MARGIN_LEFT + maxLabelWidth + 8; // 8px spacing after colon
+
+    function addLabelValue(label, value) {
+      if (!value || value.trim() === "") return;
+
+      const labelText = label + ":";
+      const maxValueWidth = PAGE_WIDTH - VALUE_START_X - 10;
+
+      // Cek apakah nilai terlalu panjang untuk satu baris
+      if (doc.getTextWidth(value) > maxValueWidth) {
+        // Label di baris terpisah, nilai di bawahnya dengan indentasi
+        doc.text(labelText, MARGIN_LEFT, y);
+        y += LINE_HEIGHT + 1;
+
+        const lines = doc.splitTextToSize(value, PAGE_WIDTH - MARGIN_LEFT - 20);
+        lines.forEach((line, index) => {
+          doc.text(line, MARGIN_LEFT + 20, y);
+          y += LINE_HEIGHT;
+        });
+        y += PARAGRAPH_SPACING;
+      } else {
+        // Label dan nilai dalam satu baris dengan alignment yang rapi
+        doc.text(labelText, MARGIN_LEFT, y);
+        doc.text(value, VALUE_START_X, y);
+        y += LINE_HEIGHT + 3; // Spacing yang konsisten untuk readability
+      }
     }
-    addLine("Hormat saya,");
-    y += 16;
-    if (values.nama && values.nama.trim() !== "") {
-      addLine(values.nama);
+
+    function addSection(spacing = SECTION_SPACING) {
+      y += spacing;
     }
-    // Tambah lampiran jika ada
-    if (lampiranDataUrl) {
-      y += 8;
-      doc.text("Lampiran:", 15, y);
-      y += 4;
-      doc.addImage(lampiranDataUrl, "JPEG", 15, y, 50, 40);
-      y += 44;
+
+    function addTitle(title) {
+      checkPageBreak(20); // Ensure enough space for title
+      doc.setFont("Times", "Bold");
+      doc.setFontSize(14);
+      const titleWidth = doc.getTextWidth(title);
+      const centerX = (210 - titleWidth) / 2; // Center on A4 page
+      doc.text(title, centerX, y);
+      doc.setFont("Times", "Roman");
+      doc.setFontSize(12);
+      y += LINE_HEIGHT + SECTION_SPACING;
     }
-  } else if (type === "izin") {
-    addLine("SURAT IZIN", 0);
-    y += 4;
-    addLine("");
-    addLine("Kepada Yth.");
-    addLine("Bapak/Ibu Guru");
-    addLine("Di Tempat");
-    y += 4;
-    addLine("");
-    addLine("Dengan hormat,");
-    addLine("Saya yang bertanda tangan di bawah ini:");
-    addLabelValue("Nama", values.nama);
-    addLabelValue("Kelas", values.kelas);
-    y += 4;
-    addLine("");
-    addLine("Dengan ini memohon izin untuk " + values.keperluan + ".");
-    y += 8;
-    addLine("Demikian surat ini saya buat, atas perhatian Bapak/Ibu saya ucapkan terima kasih.");
-    y += 4;
-    addLine("");
-    if (values.tanggal && values.tanggal.trim() !== "") {
-      addLine(values.tanggal);
-      y += 8;
+
+    function checkPageBreak(requiredSpace = 20) {
+      if (y + requiredSpace > 280) {
+        // 280 is near bottom of A4 page
+        doc.addPage();
+        y = 25; // Reset to top margin
+      }
     }
-    addLine("Hormat saya,");
-    y += 16;
-    if (values.nama && values.nama.trim() !== "") {
-      addLine(values.nama);
+
+    if (type === "pernyataan") {
+      addTitle("SURAT PERNYATAAN");
+      addSection();
+
+      addLine("Saya yang bertanda tangan di bawah ini:");
+      addSection(4);
+
+      addLabelValue("Nama", values.nama);
+      addLabelValue("Tempat/Tanggal Lahir", values.tempatTanggalLahir);
+      addLabelValue("Alamat", values.alamat);
+
+      addSection();
+      addLine("Dengan ini menyatakan bahwa:");
+      addSection(4);
+
+      addParagraph(values.pernyataan, 0);
+
+      addSection();
+      addLine("Demikian surat pernyataan ini dibuat dengan sebenar-benarnya.");
+
+      addSection();
+      if (values.tanggal && values.tanggal.trim() !== "") {
+        addLine(values.tanggal);
+        addSection(4);
+      }
+
+      addLine("Hormat saya,");
+      addSection(20); // Space for signature
+
+      if (values.nama && values.nama.trim() !== "") {
+        addLine(values.nama);
+      }
+
+      // Tambah lampiran jika ada
+      if (lampiranDataUrl) {
+        addSection();
+        addLine("Lampiran:");
+        addSection(4);
+        doc.addImage(lampiranDataUrl, "JPEG", MARGIN_LEFT, y, 50, 40);
+        y += 44;
+      }
+    } else if (type === "izin") {
+      addTitle("SURAT IZIN");
+      addSection();
+
+      addLine("Kepada Yth.");
+      addLine("Bapak/Ibu Guru");
+      addLine("Di Tempat");
+
+      addSection();
+      addLine("Dengan hormat,");
+      addLine("Saya yang bertanda tangan di bawah ini:");
+      addSection(4);
+
+      addLabelValue("Nama", values.nama);
+      addLabelValue("Kelas", values.kelas);
+
+      addSection();
+      addParagraph("Dengan ini memohon izin untuk " + values.keperluan + ".");
+
+      addSection();
+      addLine("Demikian surat ini saya buat, atas perhatian Bapak/Ibu saya ucapkan terima kasih.");
+
+      addSection();
+      if (values.tanggal && values.tanggal.trim() !== "") {
+        addLine(values.tanggal);
+        addSection(4);
+      }
+
+      addLine("Hormat saya,");
+      addSection(20); // Space for signature
+
+      if (values.nama && values.nama.trim() !== "") {
+        addLine(values.nama);
+      }
+
+      if (lampiranDataUrl) {
+        addSection();
+        addLine("Lampiran:");
+        addSection(4);
+        doc.addImage(lampiranDataUrl, "JPEG", MARGIN_LEFT, y, 50, 40);
+        y += 44;
+      }
+    } else if (type === "kuasa") {
+      addTitle("SURAT KUASA");
+      addSection();
+
+      addLine("Yang bertanda tangan di bawah ini:");
+      addSection(4);
+
+      addLabelValue("Nama", values.pemberi);
+
+      addSection();
+      addLine("Dengan ini memberikan kuasa kepada:");
+      addSection(4);
+
+      addLabelValue("Nama", values.penerima);
+
+      addSection();
+      addLine("Untuk keperluan:");
+      addSection(4);
+
+      addParagraph(values.keperluan, 0);
+
+      addSection();
+      addLine("Demikian surat kuasa ini dibuat untuk dipergunakan sebagaimana mestinya.");
+
+      addSection();
+      if (values.tanggal && values.tanggal.trim() !== "") {
+        addLine(values.tanggal);
+        addSection(4);
+      }
+
+      addLine("Pemberi Kuasa,");
+      addSection(20); // Space for signature
+
+      if (values.pemberi && values.pemberi.trim() !== "") {
+        addLine(values.pemberi);
+      }
+
+      if (lampiranDataUrl) {
+        addSection();
+        addLine("Lampiran:");
+        addSection(4);
+        doc.addImage(lampiranDataUrl, "JPEG", MARGIN_LEFT, y, 50, 40);
+        y += 44;
+      }
     }
-    if (lampiranDataUrl) {
-      y += 8;
-      doc.text("Lampiran:", 15, y);
-      y += 4;
-      doc.addImage(lampiranDataUrl, "JPEG", 15, y, 50, 40);
-      y += 44;
-    }
-  } else if (type === "kuasa") {
-    addLine("SURAT KUASA", 0);
-    y += 4;
-    addLine("");
-    addLine("Yang bertanda tangan di bawah ini:");
-    addLabelValue("Nama", values.pemberi);
-    y += 4;
-    addLine("");
-    addLine("Dengan ini memberikan kuasa kepada:");
-    addLabelValue("Nama", values.penerima);
-    y += 4;
-    addLine("");
-    addLine("Untuk keperluan:");
-    doc.text(values.keperluan, 15, y);
-    y += 12;
-    addLine("");
-    addLine("Demikian surat kuasa ini dibuat untuk dipergunakan sebagaimana mestinya.");
-    y += 4;
-    addLine("");
-    if (values.tanggal && values.tanggal.trim() !== "") {
-      addLine(values.tanggal);
-      y += 8;
-    }
-    addLine("Pemberi Kuasa,");
-    y += 16;
-    if (values.pemberi && values.pemberi.trim() !== "") {
-      addLine(values.pemberi);
-    }
-    if (lampiranDataUrl) {
-      y += 8;
-      doc.text("Lampiran:", 15, y);
-      y += 4;
-      doc.addImage(lampiranDataUrl, "JPEG", 15, y, 50, 40);
-      y += 44;
-    }
+    doc.save(`surat-${type}.pdf`);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("Terjadi kesalahan saat membuat PDF. Silakan coba lagi.");
+  } finally {
+    // Reset loading state
+    btnText.textContent = "Generate PDF";
+    loadingSpinner.classList.add("hidden");
+    generateBtn.disabled = false;
+    generateBtn.classList.remove("opacity-75", "cursor-not-allowed");
   }
-  doc.save(`surat-${type}.pdf`);
 });
 
 if (lampiranFile) {
   lampiranFile.addEventListener("change", function (e) {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Mohon pilih file gambar yang valid (JPG, PNG, GIF, dll.)");
+        lampiranFile.value = "";
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Ukuran file terlalu besar. Maksimal 5MB.");
+        lampiranFile.value = "";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function (evt) {
         lampiranDataUrl = evt.target.result;
-        lampiranPreview.innerHTML = `<img src="${lampiranDataUrl}" alt="Lampiran" class="max-h-40 mt-2" />`;
+        lampiranPreview.classList.remove("hidden");
+        lampiranPreview.innerHTML = `
+          <div class="text-center">
+            <img src="${lampiranDataUrl}" alt="Lampiran" class="max-h-40 mx-auto rounded-lg shadow-md" />
+            <p class="text-sm text-gray-600 mt-2">${file.name}</p>
+            <button type="button" onclick="removeAttachment()" class="text-red-500 text-sm hover:text-red-700 mt-1">
+              <i class="fas fa-trash mr-1"></i>Hapus
+            </button>
+          </div>
+        `;
       };
       reader.readAsDataURL(file);
     } else {
-      lampiranDataUrl = null;
-      lampiranPreview.innerHTML = "";
+      removeAttachment();
     }
   });
+}
+
+function removeAttachment() {
+  lampiranDataUrl = null;
+  lampiranPreview.innerHTML = "";
+  lampiranPreview.classList.add("hidden");
+  lampiranFile.value = "";
 }
