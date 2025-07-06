@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Surat PDF</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
+        <h1 class="text-2xl font-bold mb-4 text-center">Generator Surat PDF</h1>
+        <form id="form-surat" class="space-y-4">
+            <label class="block">
+                <span class="font-semibold">Jenis Surat</span>
+                <select id="jenis-surat" class="mt-1 block w-full border rounded p-2">
+                    <option value="pernyataan">Surat Pernyataan</option>
+                    <option value="izin">Surat Izin</option>
+                    <option value="kuasa">Surat Kuasa</option>
+                </select>
+            </label>
+            <div id="input-fields"></div>
+            <label class="block">
+                <span class="font-semibold">Lampiran (Foto/Gambar)</span>
+                <input type="file" id="lampiran-file" accept="image/*" class="mt-1 block w-full border rounded p-2" />
+            </label>
+            <div id="lampiran-preview" class="mt-2"></div>
+            <button type="button" id="generate-btn"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Generate PDF</button>
+        </form>
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold mb-2">Preview Surat</h2>
+            <div id="preview" class="bg-gray-50 p-4 rounded border text-sm whitespace-pre-line"></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
