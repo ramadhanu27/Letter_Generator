@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Generation - Indonesian PDF Letter Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-file-pdf mr-2 text-red-600"></i>
+                Test PDF Generation
+            </h1>
+            
+            <div class="grid md:grid-cols-3 gap-4 mb-8">
+                <button onclick="testPernyataan()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-file-alt mr-2"></i>Test Surat Pernyataan
+                </button>
+                <button onclick="testIzin()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-file-signature mr-2"></i>Test Surat Izin
+                </button>
+                <button onclick="testKuasa()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-handshake mr-2"></i>Test Surat Kuasa
+                </button>
+            </div>
+            
+            <div id="status" class="mb-4"></div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h3 class="font-semibold mb-2">Test Results:</h3>
+                <ul id="results" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const colors = {
+                info: 'bg-blue-100 text-blue-800',
+                success: 'bg-green-100 text-green-800',
+                error: 'bg-red-100 text-red-800'
+            };
+            
+            status.innerHTML = `
+                <div class="p-4 rounded-lg ${colors[type]}">
+                    ${message}
+                </div>
+            `;
+        }
+        
+        function addResult(test, success, message) {
+            const results = document.getElementById('results');
+            const icon = success ? '<i class="fas fa-check-circle text-green-600"></i>' : '<i class="fas fa-times-circle text-red-600"></i>';
+            
+            results.innerHTML += `
+                <li class="flex items-center">
+                    ${icon}
+                    <span class="ml-2">${test}: ${message}</span>
+                </li>
+            `;
+        }
+        
+        function testJsPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                addResult('jsPDF Library', true, 'Library loaded successfully');
+                return true;
+            } catch (error) {
+                addResult('jsPDF Library', false, `Error: ${error.message}`);
+                return false;
+            }
+        }
+        
+        function testPernyataan() {
+            showStatus('Testing Surat Pernyataan generation...', 'info');
+            
+            if (!testJsPDF()) return;
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Test Indonesian text
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                
+                // Add title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("SURAT PERNYATAAN", 105, 30, { align: 'center' });
+                
+                // Add content
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.text("Saya yang bertanda tangan di bawah ini:", 25, 50);
+                doc.text("Nama                : Ahmad Wijaya", 25, 65);
+                doc.text("Tempat/Tanggal Lahir: Jakarta, 15 Januari 1990", 25, 75);
+                doc.text("Alamat              : Jl. Merdeka No. 123, Jakarta", 25, 85);
+                
+                doc.text("Dengan ini menyatakan bahwa:", 25, 105);
+                doc.text("Saya bertanggung jawab penuh atas kebenaran data yang saya berikan.", 25, 120);
+                
+                doc.text("Jakarta, 19 Juli 2025", 140, 160);
+                doc.text("Hormat saya,", 25, 180);
+                doc.text("Ahmad Wijaya", 25, 220);
+                
+                doc.save('test-surat-pernyataan.pdf');
+                addResult('Surat Pernyataan', true, 'PDF generated successfully');
+                showStatus('Surat Pernyataan PDF generated successfully!', 'success');
+                
+            } catch (error) {
+                addResult('Surat Pernyataan', false, `Error: ${error.message}`);
+                showStatus(`Error generating Surat Pernyataan: ${error.message}`, 'error');
+            }
+        }
+        
+        function testIzin() {
+            showStatus('Testing Surat Izin generation...', 'info');
+            
+            if (!testJsPDF()) return;
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                
+                // Add title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("SURAT IZIN", 105, 30, { align: 'center' });
+                
+                // Add content
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.text("Jakarta, 19 Juli 2025", 140, 50);
+                
+                doc.text("Kepada Yth.", 25, 70);
+                doc.text("Manager HRD", 25, 80);
+                doc.text("PT Teknologi Maju", 25, 90);
+                
+                doc.text("Dengan hormat,", 25, 110);
+                doc.text("Saya yang bertanda tangan di bawah ini:", 25, 125);
+                
+                doc.text("Nama                : Ahmad Wijaya", 25, 145);
+                doc.text("Jabatan/Posisi      : Staff IT", 25, 155);
+                doc.text("Instansi/Organisasi : PT Teknologi Maju", 25, 165);
+                
+                doc.text("Dengan ini memohon izin dari tanggal 20 Juli 2025 sampai dengan", 25, 185);
+                doc.text("21 Juli 2025 untuk menghadiri acara pernikahan keluarga.", 25, 195);
+                
+                doc.text("Demikian surat ini saya buat, atas perhatian dan perkenan", 25, 215);
+                doc.text("Bapak/Ibu saya ucapkan terima kasih.", 25, 225);
+                
+                doc.text("Hormat saya,", 25, 245);
+                doc.text("Ahmad Wijaya", 25, 275);
+                
+                doc.save('test-surat-izin.pdf');
+                addResult('Surat Izin', true, 'PDF generated successfully');
+                showStatus('Surat Izin PDF generated successfully!', 'success');
+                
+            } catch (error) {
+                addResult('Surat Izin', false, `Error: ${error.message}`);
+                showStatus(`Error generating Surat Izin: ${error.message}`, 'error');
+            }
+        }
+        
+        function testKuasa() {
+            showStatus('Testing Surat Kuasa generation...', 'info');
+            
+            if (!testJsPDF()) return;
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                
+                // Add title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("SURAT KUASA", 105, 30, { align: 'center' });
+                
+                // Add content
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.text("Yang bertanda tangan di bawah ini:", 25, 60);
+                doc.text("Nama: Ahmad Wijaya", 25, 80);
+                
+                doc.text("Dengan ini memberikan kuasa kepada:", 25, 100);
+                doc.text("Nama: Sari Indah Permata", 25, 120);
+                
+                doc.text("Untuk keperluan:", 25, 140);
+                doc.text("Mengurus dokumen administrasi di kantor kelurahan.", 25, 160);
+                
+                doc.text("Demikian surat kuasa ini dibuat untuk dipergunakan", 25, 180);
+                doc.text("sebagaimana mestinya.", 25, 190);
+                
+                doc.text("Jakarta, 19 Juli 2025", 140, 210);
+                doc.text("Pemberi Kuasa,", 25, 230);
+                doc.text("Ahmad Wijaya", 25, 270);
+                
+                doc.save('test-surat-kuasa.pdf');
+                addResult('Surat Kuasa', true, 'PDF generated successfully');
+                showStatus('Surat Kuasa PDF generated successfully!', 'success');
+                
+            } catch (error) {
+                addResult('Surat Kuasa', false, `Error: ${error.message}`);
+                showStatus(`Error generating Surat Kuasa: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test jsPDF on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('Ready to test PDF generation. Click any button above to start.', 'info');
+        });
+    </script>
+</body>
+</html>

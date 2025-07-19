@@ -1,0 +1,228 @@
+# Indonesian PDF Letter Generator - Apache Configuration
+
+# Enable rewrite engine
+
+RewriteEngine On
+
+# Security Headers
+
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always append X-Frame-Options SAMEORIGIN
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options nosniff
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy (adjust as needed)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self';"
+</IfModule>
+
+# Hide sensitive files
+
+<Files ".env">
+Order allow,deny
+Deny from all
+</Files>
+
+<Files "\*.log">
+Order allow,deny
+Deny from all
+</Files>
+
+<Files "composer.json">
+Order allow,deny
+Deny from all
+</Files>
+
+<Files "composer.lock">
+Order allow,deny
+Deny from all
+</Files>
+
+# Protect config and class files from direct access
+
+<FilesMatch "\.(php)$">
+<If "%{REQUEST_URI} =~ m#^/(config|classes)/#">
+Order allow,deny
+Deny from all
+</If>
+</FilesMatch>
+
+# Protect database files
+
+<FilesMatch "\.(sql|db|sqlite)$">
+Order allow,deny
+Deny from all
+</FilesMatch>
+
+# Enable compression
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Set cache headers for static files
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/ico "access plus 1 month"
+    ExpiresByType image/icon "access plus 1 month"
+    ExpiresByType text/x-icon "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+# PHP Configuration
+
+<IfModule mod_php7.c>
+    # Increase upload limits for attachments
+    php_value upload_max_filesize 5M
+    php_value post_max_size 10M
+    php_value max_execution_time 60
+    php_value max_input_time 60
+    php_value memory_limit 128M
+    
+    # Session security
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_strict_mode 1
+    
+    # Hide PHP version
+    php_flag expose_php off
+    
+    # Error handling
+    php_flag display_errors off
+    php_flag log_errors on
+    php_value error_log logs/error.log
+</IfModule>
+
+# URL Rewriting Rules
+
+RewriteEngine On
+
+# Redirect to HTTPS (uncomment in production)
+
+# RewriteCond %{HTTPS} off
+
+# RewriteRule ^(.\*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove trailing slashes
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} (.+)/$
+RewriteRule ^ %1 [R=301,L]
+
+# Redirect index.html to root
+
+RewriteCond %{THE_REQUEST} /index\.html[\s?] [NC]
+RewriteRule ^index\.html$ / [R=301,L]
+
+# API routing
+
+RewriteRule ^api/(.\*)$ api/$1 [L,QSA]
+
+# Custom error pages
+
+ErrorDocument 404 /404.php
+ErrorDocument 403 /403.php
+ErrorDocument 500 /500.php
+
+# Prevent access to backup files
+
+<FilesMatch "\.(bak|backup|old|tmp|temp)$">
+Order allow,deny
+Deny from all
+</FilesMatch>
+
+# Prevent access to version control files
+
+<FilesMatch "\.(git|svn|hg)">
+Order allow,deny
+Deny from all
+</FilesMatch>
+
+# File upload security
+
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+<If "%{REQUEST_URI} =~ m#^/uploads/#">
+Order allow,deny
+Deny from all
+</If>
+</FilesMatch>
+
+# Limit file upload types in uploads directory
+
+# Note: This should be configured in uploads/.htaccess for better security
+
+# Prevent hotlinking
+
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yourdomain.com [NC]
+RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif)$ [NC]
+RewriteRule \.(jpg|jpeg|png|gif)$ - [F]
+
+# Browser caching
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg)$">
+        Header set Cache-Control "max-age=2592000, public"
+    </FilesMatch>
+    
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "max-age=7200, public"
+    </FilesMatch>
+    
+    <FilesMatch "\.(php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+</IfModule>
+
+# Deny access to sensitive directories
+
+# These are already protected by the FilesMatch rules above
+
+# Custom MIME types
+
+AddType application/pdf .pdf
+AddType image/svg+xml .svg
+AddType application/json .json
+
+# Charset
+
+AddDefaultCharset UTF-8
+
+# Options
+
+Options -Indexes
+Options -ExecCGI
+Options -Includes
+Options -MultiViews
+
+# Follow symbolic links
+
+Options +FollowSymLinks
+
+# Server signature
+
+ServerSignature Off

@@ -1,12 +1,12 @@
 // script.js
 const jenisSurat = document.getElementById("jenis-surat");
 const inputFields = document.getElementById("input-fields");
-const preview = document.getElementById("preview");
+const preview = document.getElementById("preview-container");
 const generateBtn = document.getElementById("generate-btn");
 
 // Preview gambar lampiran
-const lampiranFile = document.getElementById("lampiran-file");
-const lampiranPreview = document.getElementById("lampiran-preview");
+const lampiranFile = document.getElementById("lampiran");
+let lampiranPreview = null; // Will be created dynamically
 let lampiranDataUrl = null;
 
 const inputConfigs = {
@@ -125,11 +125,19 @@ function getInputValues(type) {
   const values = {};
   inputConfigs[type].forEach((field) => {
     const el = document.getElementById(field.id);
-    values[field.id] = el.value;
-    if (field.type === "date" && el.value) {
-      // Format tanggal ke format Indonesia
-      const date = new Date(el.value);
-      values[field.id] = date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    if (el) {
+      values[field.id] = el.value;
+      if (field.type === "date" && el.value) {
+        // Format tanggal ke format Indonesia
+        const date = new Date(el.value);
+        // Add one day to handle timezone issues
+        date.setDate(date.getDate() + 1);
+        values[field.id] = date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      }
     }
   });
   return values;
@@ -151,7 +159,7 @@ function updatePreview() {
       </div>
     `;
   } else {
-    preview.textContent = previewText;
+    preview.innerHTML = `<pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">${previewText}</pre>`;
   }
 }
 
@@ -236,28 +244,48 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 generateBtn.addEventListener("click", async () => {
+  console.log("Generate PDF button clicked");
+
   // Show loading state
   const btnText = document.getElementById("btn-text");
-  const loadingSpinner = document.getElementById("loading-spinner");
+  const btnLoading = document.getElementById("btn-loading");
 
-  btnText.textContent = "Generating...";
-  loadingSpinner.classList.remove("hidden");
+  if (!btnText || !btnLoading) {
+    console.error("Button elements not found");
+    alert("Error: Button elements not found. Please refresh the page.");
+    return;
+  }
+
+  btnText.classList.add("hidden");
+  btnLoading.classList.remove("hidden");
   generateBtn.disabled = true;
   generateBtn.classList.add("opacity-75", "cursor-not-allowed");
 
   try {
+    // Check if jsPDF is available
+    if (!window.jspdf) {
+      throw new Error("jsPDF library not loaded");
+    }
+
+    console.log("jsPDF library available");
+
     // Add small delay for better UX
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const type = jenisSurat.value;
+    console.log("Letter type:", type);
+
     const values = getInputValues(type);
+    console.log("Form values:", values);
 
     // Validate required fields
     const requiredFields = inputConfigs[type].filter((field) => field.type !== "file");
     const emptyFields = requiredFields.filter((field) => !values[field.id] || values[field.id].trim() === "");
 
     if (emptyFields.length > 0) {
-      alert(`Mohon lengkapi field: ${emptyFields.map((f) => f.label).join(", ")}`);
+      const missingFields = emptyFields.map((f) => f.label).join(", ");
+      console.error("Missing required fields:", missingFields);
+      alert(`Mohon lengkapi field: ${missingFields}`);
       return;
     }
 
@@ -274,8 +302,12 @@ generateBtn.addEventListener("click", async () => {
       }
     }
 
-    const doc = new window.jspdf.jsPDF();
-    doc.setFont("Times", "Roman");
+    // Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Set font for Indonesian text support
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
 
     // Konstanta untuk formatting standar surat resmi Indonesia
@@ -336,7 +368,7 @@ generateBtn.addEventListener("click", async () => {
     const ALL_LABELS = ["Nama", "Tempat/Tanggal Lahir", "Alamat", "Kelas", "Jabatan/Posisi", "Instansi/Organisasi", "Nama Pemberi Kuasa", "Nama Penerima Kuasa", "Jabatan", "NIP"];
 
     // Gunakan font yang sama untuk mengukur
-    doc.setFont("Times", "Roman");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
 
     const maxLabelWidth = Math.max(...ALL_LABELS.map((label) => doc.getTextWidth(label + " ")));
@@ -380,10 +412,10 @@ generateBtn.addEventListener("click", async () => {
 
     function addTitle(title) {
       checkPageBreak(25); // Pastikan ruang cukup untuk judul
-      doc.setFont("Times", "Bold");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(16); // Ukuran font lebih besar untuk judul
       addLine(title, 0, LINE_HEIGHT + 5, "center");
-      doc.setFont("Times", "Roman");
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
       y += SECTION_SPACING; // Spacing setelah judul
     }
@@ -425,7 +457,7 @@ generateBtn.addEventListener("click", async () => {
     function addLetterhead(title, subtitle = "") {
       // Fungsi untuk menambahkan kop surat jika diperlukan
       checkPageBreak(30);
-      doc.setFont("Times", "Bold");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       addLine(title, 0, LINE_HEIGHT, "center");
 
@@ -434,7 +466,7 @@ generateBtn.addEventListener("click", async () => {
         addLine(subtitle, 0, LINE_HEIGHT, "center");
       }
 
-      doc.setFont("Times", "Roman");
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
 
       // Garis pemisah
@@ -597,14 +629,19 @@ generateBtn.addEventListener("click", async () => {
         y += 44;
       }
     }
-    doc.save(`surat-${type}.pdf`);
+    const filename = `surat-${type}-${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(filename);
+    console.log("PDF saved successfully:", filename);
+
+    // Show success notification
+    showNotification(`PDF "${filename}" berhasil dibuat dan diunduh!`, "success");
   } catch (error) {
     console.error("Error generating PDF:", error);
-    alert("Terjadi kesalahan saat membuat PDF. Silakan coba lagi.");
+    showNotification(`Terjadi kesalahan saat membuat PDF: ${error.message}`, "error");
   } finally {
     // Reset loading state
-    btnText.textContent = "Generate PDF";
-    loadingSpinner.classList.add("hidden");
+    btnText.classList.remove("hidden");
+    btnLoading.classList.add("hidden");
     generateBtn.disabled = false;
     generateBtn.classList.remove("opacity-75", "cursor-not-allowed");
   }
@@ -631,6 +668,15 @@ if (lampiranFile) {
       const reader = new FileReader();
       reader.onload = function (evt) {
         lampiranDataUrl = evt.target.result;
+
+        // Create preview element if it doesn't exist
+        if (!lampiranPreview) {
+          lampiranPreview = document.createElement("div");
+          lampiranPreview.id = "lampiran-preview";
+          lampiranPreview.className = "mt-4 bg-blue-50 rounded-lg border border-blue-200";
+          lampiranFile.parentNode.appendChild(lampiranPreview);
+        }
+
         lampiranPreview.classList.remove("hidden");
         lampiranPreview.innerHTML = `
           <div class="text-center p-4">
@@ -649,9 +695,47 @@ if (lampiranFile) {
   });
 }
 
-function removeAttachment() {
+// Make removeAttachment available globally
+window.removeAttachment = function () {
   lampiranDataUrl = null;
-  lampiranPreview.innerHTML = "";
-  lampiranPreview.classList.add("hidden");
-  lampiranFile.value = "";
+  if (lampiranPreview) {
+    lampiranPreview.innerHTML = "";
+    lampiranPreview.classList.add("hidden");
+  }
+  if (lampiranFile) {
+    lampiranFile.value = "";
+  }
+};
+
+// Notification system
+function showNotification(message, type = "success") {
+  const notification = document.createElement("div");
+  notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${type === "success" ? "bg-green-500" : "bg-red-500"} text-white transform transition-all duration-300 translate-x-full`;
+
+  notification.innerHTML = `
+    <div class="flex items-center">
+      <i class="fas ${type === "success" ? "fa-check-circle" : "fa-exclamation-circle"} mr-2"></i>
+      <span class="text-sm">${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Animate in
+  setTimeout(() => {
+    notification.classList.remove("translate-x-full");
+  }, 100);
+
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    notification.classList.add("translate-x-full");
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 300);
+  }, 5000);
 }
