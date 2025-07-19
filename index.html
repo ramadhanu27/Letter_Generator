@@ -30,7 +30,70 @@
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <style>
+        /* Custom animations and styles */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+
+        /* Custom scrollbar */
+        #preview::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #preview::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        #preview::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        #preview::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Enhanced hover effects */
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
 </head>
 
 <body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen py-8 px-4">
@@ -46,9 +109,10 @@
 
         <div class="grid lg:grid-cols-2 gap-8">
             <!-- Form Section -->
-            <div class="form-section rounded-xl shadow-lg p-6 lg:p-8 animate-slide-up card">
-                <div class="flex items-center mb-6 pb-4 border-b border-gray-100">
-                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+            <div
+                class="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg hover-shadow p-6 lg:p-8 animate-slide-up border border-blue-100">
+                <div class="flex items-center mb-6 pb-4 border-b border-blue-200">
+                    <div class="bg-blue-100 p-3 rounded-lg mr-3 shadow-sm">
                         <i class="fas fa-edit text-blue-600 text-lg"></i>
                     </div>
                     <h2 class="text-xl font-semibold text-gray-800">Form Input</h2>
@@ -57,34 +121,54 @@
                 <form id="form-surat" class="space-y-6">
                     <div class="space-y-3">
                         <label class="flex items-center text-sm font-medium text-gray-700">
-                            <i class="fas fa-list-ul mr-2 text-gray-400"></i>
+                            <i class="fas fa-list-ul mr-2 text-blue-500"></i>
                             Jenis Surat
                         </label>
                         <select id="jenis-surat"
-                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm hover:shadow-md">
                             <option value="pernyataan">📄 Surat Pernyataan</option>
-                            <option value="izin">📝 Surat Izin</option>
+                            <option value="izin">📝 Surat Izin (Universal)</option>
                             <option value="kuasa">🤝 Surat Kuasa</option>
                         </select>
+
+                        <!-- Tombol Contoh untuk Surat Izin -->
+                        <div id="contoh-buttons" class="mt-4 hidden">
+                            <p class="text-sm text-gray-600 mb-2">💡 Isi dengan contoh data:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" id="contoh-karyawan"
+                                    class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                                    👔 Karyawan
+                                </button>
+                                <button type="button" id="contoh-mahasiswa"
+                                    class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors">
+                                    🎓 Mahasiswa
+                                </button>
+                                <button type="button" id="contoh-siswa"
+                                    class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
+                                    📚 Siswa
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="input-fields" class="space-y-4"></div>
 
                     <div class="space-y-3">
                         <label class="flex items-center text-sm font-medium text-gray-700">
-                            <i class="fas fa-paperclip mr-2 text-gray-400"></i>
+                            <i class="fas fa-paperclip mr-2 text-blue-500"></i>
                             Lampiran (Foto/Gambar)
                         </label>
                         <div class="relative">
                             <input type="file" id="lampiran-file" accept="image/*"
-                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                         </div>
                     </div>
 
-                    <div id="lampiran-preview" class="image-preview hidden"></div>
+                    <div id="lampiran-preview"
+                        class="hidden border-2 border-dashed border-blue-200 rounded-lg p-4 bg-blue-50"></div>
 
                     <button type="button" id="generate-btn"
-                        class="btn-primary w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl flex items-center justify-center">
+                        class="hover-lift w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
                         <i class="fas fa-download mr-2"></i>
                         <span id="btn-text">Generate PDF</span>
                         <i id="loading-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
@@ -93,18 +177,19 @@
             </div>
 
             <!-- Preview Section -->
-            <div class="preview-section rounded-xl shadow-lg p-6 lg:p-8 animate-slide-up card">
-                <div class="flex items-center mb-6 pb-4 border-b border-gray-100">
-                    <div class="bg-green-100 p-2 rounded-lg mr-3">
+            <div
+                class="bg-gradient-to-br from-white to-green-50 rounded-xl shadow-lg hover-shadow p-6 lg:p-8 animate-slide-up border border-green-100">
+                <div class="flex items-center mb-6 pb-4 border-b border-green-200">
+                    <div class="bg-green-100 p-3 rounded-lg mr-3 shadow-sm">
                         <i class="fas fa-eye text-green-600 text-lg"></i>
                     </div>
                     <h2 class="text-xl font-semibold text-gray-800">Preview Surat</h2>
                 </div>
                 <div id="preview"
-                    class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-200 text-sm whitespace-pre-line min-h-96 leading-relaxed">
+                    class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 text-sm whitespace-pre-line min-h-96 leading-relaxed font-mono max-h-96 overflow-y-auto">
                     <div class="text-gray-400 text-center py-8">
-                        <i class="fas fa-file-alt text-4xl mb-4"></i>
-                        <p>Preview surat akan muncul di sini setelah Anda mengisi form</p>
+                        <i class="fas fa-file-alt text-4xl mb-4 text-gray-300"></i>
+                        <p class="text-gray-500">Preview surat akan muncul di sini setelah Anda mengisi form</p>
                     </div>
                 </div>
             </div>
