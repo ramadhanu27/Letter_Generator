@@ -1,6 +1,6 @@
 <?php
-require_once 'config/database.php';
-require_once 'classes/User.php';
+require_once '../../../config/database.php';
+require_once '../../../app/models/User.php';
 
 // Require login
 User::requireLogin();

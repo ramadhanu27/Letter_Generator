@@ -1,13 +1,12 @@
 <?php
-session_start();
-require_once 'config/database.php';
-require_once 'classes/User.php';
+require_once '../config/database.php';
+require_once '../app/models/User.php';
 
 // Redirect if already logged in as admin
 if (isset($_SESSION['user_id'])) {
     $current_user = User::getCurrentUser();
     if ($current_user && $current_user['role'] === 'admin') {
-        header('Location: admin.php');
+        header('Location: index.php');
         exit();
     }
 }
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Force redirect to admin dashboard
-                header('Location: admin.php');
+                header('Location: index.php');
                 exit();
             }
         } catch (Exception $e) {
@@ -141,7 +140,7 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['admin_remember_token'])) {
             $_SESSION['admin_login_time'] = time();
             $_SESSION['is_admin'] = true;
 
-            header('Location: admin.php');
+            header('Location: index.php');
             exit();
         }
     } catch (Exception $e) {

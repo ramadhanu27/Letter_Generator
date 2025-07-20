@@ -1,15 +1,36 @@
 <?php
-require_once 'config/database.php';
-require_once 'classes/User.php';
+require_once '../config/database.php';
+require_once '../app/models/User.php';
 
-// Redirect if already logged in
-if (User::isLoggedIn()) {
-    header('Location: dashboard.php');
-    exit;
+// Prevent redirect loops
+if (!isset($_SESSION['login_redirect_count'])) {
+    $_SESSION['login_redirect_count'] = 0;
+}
+
+// Redirect if already logged in (but prevent loops)
+if (User::isLoggedIn() && !isset($_GET['force'])) {
+    $_SESSION['login_redirect_count']++;
+
+    if ($_SESSION['login_redirect_count'] < 3) {
+        header('Location: ../app/views/user/dashboard.php');
+        exit;
+    } else {
+        // Reset counter and show error
+        unset($_SESSION['login_redirect_count']);
+        $error_message = 'Redirect loop detected. Please clear your browser cache and cookies.';
+    }
+} else {
+    // Reset counter when showing login form
+    unset($_SESSION['login_redirect_count']);
 }
 
 $error_message = '';
 $success_message = '';
+
+// Handle 2FA expired error
+if (isset($_GET['error']) && $_GET['error'] === '2fa_expired') {
+    $error_message = 'Sesi verifikasi 2FA telah berakhir. Silakan login kembali.';
+}
 
 // Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,15 +44,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($email_or_username) || empty($password)) {
             $error_message = 'Email/username dan password wajib diisi';
         } else {
-            $user = new User();
-            $result = $user->login($email_or_username, $password, $remember_me);
+            try {
+                $database = new Database();
+                $conn = $database->getConnection();
 
-            if ($result['success']) {
-                $redirect_url = $_GET['redirect'] ?? 'dashboard.php';
-                header("Location: $redirect_url");
-                exit;
-            } else {
-                $error_message = $result['message'];
+                // Check user credentials first
+                $stmt = $conn->prepare("
+                    SELECT id, username, email, password_hash, full_name, role, is_active, two_factor_enabled
+                    FROM users
+                    WHERE (username = ? OR email = ?) AND is_active = 1
+                ");
+                $stmt->execute([$email_or_username, $email_or_username]);
+                $user_data = $stmt->fetch();
+
+                if (!$user_data) {
+                    $error_message = 'Email/username atau password tidak valid.';
+                } elseif (!password_verify($password, $user_data['password_hash'])) {
+                    $error_message = 'Email/username atau password tidak valid.';
+                } else {
+                    // Successful login
+                    $_SESSION['logged_in'] = true;
+                    $_SESSION['user_id'] = $user_data['id'];
+                    $_SESSION['username'] = $user_data['username'];
+                    $_SESSION['email'] = $user_data['email'];
+                    $_SESSION['role'] = $user_data['role'];
+                    $_SESSION['full_name'] = $user_data['full_name'];
+
+                    // Update last login
+                    $stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                    $stmt->execute([$user_data['id']]);
+
+                    // Handle remember me
+                    if ($remember_me) {
+                        $token = bin2hex(random_bytes(32));
+                        setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/', '', false, true);
+
+                        $stmt = $conn->prepare("UPDATE users SET remember_token = ? WHERE id = ?");
+                        $stmt->execute([$token, $user_data['id']]);
+                    }
+
+                    // Redirect based on role
+                    if ($user_data['role'] === 'admin') {
+                        header('Location: ../admin/index.php');
+                    } else {
+                        $redirect_url = $_GET['redirect'] ?? '../app/views/user/dashboard.php';
+                        header("Location: $redirect_url");
+                    }
+                    exit;
+                }
+            } catch (Exception $e) {
+                error_log("Login error: " . $e->getMessage());
+                $error_message = 'Terjadi kesalahan sistem. Silakan coba lagi.';
             }
         }
     }
@@ -48,6 +111,7 @@ $csrf_token = generateCSRFToken();
     <title>Login - Indonesian PDF Letter Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../public/assets/css/security-protection.css" rel="stylesheet">
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -57,6 +121,72 @@ $csrf_token = generateCSRFToken();
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* ========== SECURITY PROTECTION CSS ========== */
+
+        /* Disable text selection and other interactions */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Allow selection only for input fields */
+        input,
+        textarea,
+        button {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        /* Disable image dragging */
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+        }
+
+        /* Disable highlighting */
+        ::selection {
+            background: transparent;
+        }
+
+        ::-moz-selection {
+            background: transparent;
+        }
+
+        /* Anti-screenshot protection */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Disable print styles */
+        @media print {
+            * {
+                display: none !important;
+            }
+
+            body::before {
+                content: "Printing is not allowed for security reasons.";
+                display: block !important;
+                font-size: 24px;
+                text-align: center;
+                margin-top: 50px;
+            }
         }
     </style>
 </head>
@@ -223,7 +353,105 @@ $csrf_token = generateCSRFToken();
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
             submitBtn.disabled = true;
         });
+
+        // ========== SECURITY PROTECTION ==========
+
+        // Disable right click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Disable keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // F12 (Developer Tools)
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+I (Developer Tools)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+S (Save Page)
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+C (Inspect Element)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+A (Select All)
+            if (e.ctrlKey && e.keyCode === 65) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+P (Print)
+            if (e.ctrlKey && e.keyCode === 80) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable text selection
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Disable drag and drop
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Clear console periodically
+        setInterval(function() {
+            console.clear();
+        }, 1000);
+
+        // Detect developer tools
+        let devtools = {
+            open: false,
+            orientation: null
+        };
+
+        const threshold = 160;
+
+        setInterval(function() {
+            if (window.outerHeight - window.innerHeight > threshold ||
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    // Show warning when dev tools detected
+                    document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:9999;font-family:Arial,sans-serif;"><div style="text-align:center;"><div style="font-size:48px;margin-bottom:20px;color:#ff4444;">🛡️</div>Access Denied<br><small style="font-size:16px;opacity:0.8;">Developer Tools Detected</small></div></div>';
+                }
+            } else {
+                devtools.open = false;
+            }
+        }, 500);
+
+        // Console warning
+        console.log('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
+        console.log('%cThis is a browser feature intended for developers. If someone told you to copy-paste something here, it is a scam and will give them access to your account.', 'color: red; font-size: 16px;');
+        console.log('%cSee https://en.wikipedia.org/wiki/Self-XSS for more information.', 'color: red; font-size: 16px;');
     </script>
+
+    <!-- Security Protection Script -->
+    <script src="../public/assets/js/security-protection.js"></script>
 </body>
 
 </html>

@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once 'config/database.php';
-require_once 'classes/Admin.php';
+require_once '../config/database.php';
+require_once '../app/models/Admin.php';
 
 // Require admin access
 Admin::requireAdmin();

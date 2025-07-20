@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once 'config/database.php';
-require_once 'classes/Admin.php';
+require_once '../config/database.php';
+require_once '../app/models/Admin.php';
 
 // Require admin access
 Admin::requireAdmin();
@@ -237,16 +236,16 @@ Admin::logActivity('logs_accessed', 'system', null, "Admin accessed $tab logs");
                         <span class="text-white text-xl font-bold">Admin Panel</span>
                     </div>
                     <div class="hidden md:ml-6 md:flex md:space-x-8">
-                        <a href="admin.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">
+                        <a href="index.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">
                             <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
                         </a>
-                        <a href="admin_users.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">
+                        <a href="users.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">
                             <i class="fas fa-users mr-1"></i>Pengguna
                         </a>
                         <a href="admin_content.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">
                             <i class="fas fa-file-alt mr-1"></i>Konten
                         </a>
-                        <a href="admin_logs.php" class="text-white border-b-2 border-white px-1 pt-1 pb-4 text-sm font-medium">
+                        <a href="logs.php" class="text-white border-b-2 border-white px-1 pt-1 pb-4 text-sm font-medium">
                             <i class="fas fa-list-alt mr-1"></i>Log Sistem
                         </a>
                         <a href="admin_settings.php" class="text-blue-100 hover:text-white px-1 pt-1 pb-4 text-sm font-medium transition-colors">

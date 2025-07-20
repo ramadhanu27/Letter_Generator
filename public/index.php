@@ -1,7 +1,7 @@
 <?php
 // Main entry point for Indonesian PDF Letter Generator
-require_once 'config/database.php';
-require_once 'app/models/User.php';
+require_once '../config/database.php';
+require_once '../app/models/User.php';
 
 // Prevent redirect loops
 if (!isset($_SESSION['redirect_count'])) {
@@ -21,10 +21,11 @@ if (User::isLoggedIn()) {
     // Reset redirect count on successful access
     unset($_SESSION['redirect_count']);
     // Redirect to dashboard
-    header('Location: app/views/user/dashboard.php');
+    header('Location: ../app/views/user/dashboard.php');
     exit;
 } else {
     // Redirect to login
-    header('Location: auth/login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
+?>

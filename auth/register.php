@@ -1,10 +1,10 @@
 <?php
-require_once 'config/database.php';
-require_once 'classes/User.php';
+require_once '../config/database.php';
+require_once '../app/models/User.php';
 
 // Redirect if already logged in
 if (User::isLoggedIn()) {
-    header('Location: dashboard.php');
+    header('Location: ../app/views/user/dashboard.php');
     exit;
 }
 

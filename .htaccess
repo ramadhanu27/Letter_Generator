@@ -30,6 +30,54 @@ Order allow,deny
 Deny from all
 </Files>
 
+# Protect sensitive files (but allow normal PHP execution)
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.sql">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.log">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Disable server signature
+ServerSignature Off
+
+# Disable directory browsing
+Options -Indexes
+
+# Prevent access to backup files
+<FilesMatch "\.(bak|backup|old|orig|save|swp|tmp)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to version control files
+<FilesMatch "\.(git|svn|hg|bzr)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Disable HTTP TRACE method
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_METHOD} ^TRACE
+    RewriteRule .* - [F]
+</IfModule>
+
+# Prevent hotlinking
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?127.0.0.1 [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|css|js)$ - [F]
+</IfModule>
+
 <Files "\*.log">
 Order allow,deny
 Deny from all
@@ -152,11 +200,26 @@ RewriteRule ^([^.]+)$ $1.php [L]
 
 # Special admin routes
 
-RewriteRule ^admin$ admin.php [L]
-RewriteRule ^admin/users$ admin_users.php [L]
-RewriteRule ^admin/logs$ admin_logs.php [L]
-RewriteRule ^admin/login$ admin_login.php [L]
-RewriteRule ^admin/register$ admin_register.php [L]
+RewriteRule ^admin$ admin/index.php [L]
+RewriteRule ^admin/users$ admin/users.php [L]
+RewriteRule ^admin/logs$ admin/logs.php [L]
+RewriteRule ^admin/login$ admin/login.php [L]
+RewriteRule ^admin/register$ admin/register.php [L]
+
+# Authentication routes
+RewriteRule ^login$ auth/login.php [L]
+RewriteRule ^register$ auth/register.php [L]
+RewriteRule ^forgot-password$ auth/forgot_password.php [L]
+RewriteRule ^reset-password$ auth/reset_password.php [L]
+
+# User dashboard routes
+RewriteRule ^dashboard$ app/views/user/dashboard.php [L]
+RewriteRule ^profile$ app/views/user/profile.php [L]
+RewriteRule ^settings$ app/views/user/settings.php [L]
+RewriteRule ^history$ app/views/user/history.php [L]
+RewriteRule ^templates$ app/views/user/templates.php [L]
+
+
 
 # API routing
 
@@ -164,9 +227,9 @@ RewriteRule ^api/(.\*)$ api/$1 [L,QSA]
 
 # Custom error pages
 
-ErrorDocument 404 /surat/404.php
-ErrorDocument 403 /surat/403.php
-ErrorDocument 500 /surat/500.php
+ErrorDocument 404 /surat/public/404.php
+ErrorDocument 403 /surat/public/403.php
+ErrorDocument 500 /surat/public/500.php
 
 # Prevent access to backup files
 
