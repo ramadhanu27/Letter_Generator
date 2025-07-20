@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <strong>Username:</strong> $username<br>
                     <strong>Email:</strong> $email<br>
                     <strong>Nama:</strong> $full_name<br><br>
-                    <a href='admin_login.php' class='inline-block bg-violet-600 text-white px-4 py-2 rounded-lg hover:bg-violet-700 transition-colors'>
+                    <a href='admin/login' class='inline-block bg-violet-600 text-white px-4 py-2 rounded-lg hover:bg-violet-700 transition-colors'>
                         <i class='fas fa-sign-in-alt mr-2'></i>Login Sekarang
                     </a>";
 
@@ -304,13 +304,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="border-t border-gray-600 border-opacity-40 pt-6">
                         <p class="text-gray-300 text-sm mb-3">Sudah punya akun admin?</p>
                         <div class="space-y-2">
-                            <a href="admin_login.php" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
+                            <a href="admin/login" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Login Admin
                             </a>
-                            <a href="login.php" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
+                            <a href="login" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
                                 <i class="fas fa-user mr-2"></i>Login sebagai User Biasa
                             </a>
-                            <a href="index.php" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
+                            <a href="index" class="block text-gray-400 hover:text-violet-300 text-sm transition-colors">
                                 <i class="fas fa-home mr-2"></i>Kembali ke Beranda
                             </a>
                         </div>
