@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $user = new User();
             $result = $user->login($email_or_username, $password, $remember_me);
-            
+
             if ($result['success']) {
                 $redirect_url = $_GET['redirect'] ?? 'dashboard.php';
                 header("Location: $redirect_url");
@@ -41,6 +41,7 @@ $csrf_token = generateCSRFToken();
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,6 +52,7 @@ $csrf_token = generateCSRFToken();
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .glass-effect {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.1);
@@ -58,6 +60,7 @@ $csrf_token = generateCSRFToken();
         }
     </style>
 </head>
+
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md">
         <!-- Logo and Title -->
@@ -87,19 +90,19 @@ $csrf_token = generateCSRFToken();
 
             <form method="POST" action="" class="space-y-6">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                
+
                 <!-- Email/Username Field -->
                 <div>
                     <label for="email_or_username" class="block text-sm font-medium text-white mb-2">
                         <i class="fas fa-user mr-2"></i>Email atau Username
                     </label>
-                    <input type="text" 
-                           id="email_or_username" 
-                           name="email_or_username" 
-                           value="<?php echo htmlspecialchars($_POST['email_or_username'] ?? ''); ?>"
-                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
-                           placeholder="Masukkan email atau username"
-                           required>
+                    <input type="text"
+                        id="email_or_username"
+                        name="email_or_username"
+                        value="<?php echo htmlspecialchars($_POST['email_or_username'] ?? ''); ?>"
+                        class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                        placeholder="Masukkan email atau username"
+                        required>
                 </div>
 
                 <!-- Password Field -->
@@ -108,15 +111,15 @@ $csrf_token = generateCSRFToken();
                         <i class="fas fa-lock mr-2"></i>Password
                     </label>
                     <div class="relative">
-                        <input type="password" 
-                               id="password" 
-                               name="password" 
-                               class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 pr-12"
-                               placeholder="Masukkan password"
-                               required>
-                        <button type="button" 
-                                onclick="togglePassword()" 
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-100 hover:text-white transition-colors">
+                        <input type="password"
+                            id="password"
+                            name="password"
+                            class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 pr-12"
+                            placeholder="Masukkan password"
+                            required>
+                        <button type="button"
+                            onclick="togglePassword()"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-100 hover:text-white transition-colors">
                             <i id="password-icon" class="fas fa-eye"></i>
                         </button>
                     </div>
@@ -125,19 +128,19 @@ $csrf_token = generateCSRFToken();
                 <!-- Remember Me -->
                 <div class="flex items-center justify-between">
                     <label class="flex items-center text-sm text-white">
-                        <input type="checkbox" 
-                               name="remember_me" 
-                               class="mr-2 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-blue-600 focus:ring-white focus:ring-opacity-50">
+                        <input type="checkbox"
+                            name="remember_me"
+                            class="mr-2 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-blue-600 focus:ring-white focus:ring-opacity-50">
                         Ingat saya
                     </label>
-                    <a href="forgot-password.php" class="text-sm text-blue-100 hover:text-white transition-colors">
+                    <a href="forgot-password" class="text-sm text-blue-100 hover:text-white transition-colors">
                         Lupa password?
                     </a>
                 </div>
 
                 <!-- Login Button -->
-                <button type="submit" 
-                        class="w-full bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200 transform hover:scale-105">
+                <button type="submit"
+                    class="w-full bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200 transform hover:scale-105">
                     <i class="fas fa-sign-in-alt mr-2"></i>Masuk
                 </button>
             </form>
@@ -152,8 +155,8 @@ $csrf_token = generateCSRFToken();
             <!-- Register Link -->
             <div class="text-center">
                 <p class="text-blue-100 mb-4">Belum punya akun?</p>
-                <a href="register.php" 
-                   class="inline-flex items-center justify-center w-full bg-transparent border-2 border-white text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200">
+                <a href="register"
+                    class="inline-flex items-center justify-center w-full bg-transparent border-2 border-white text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200">
                     <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
                 </a>
             </div>
@@ -176,7 +179,7 @@ $csrf_token = generateCSRFToken();
         function togglePassword() {
             const passwordField = document.getElementById('password');
             const passwordIcon = document.getElementById('password-icon');
-            
+
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
                 passwordIcon.className = 'fas fa-eye-slash';
@@ -222,4 +225,5 @@ $csrf_token = generateCSRFToken();
         });
     </script>
 </body>
+
 </html>

@@ -111,7 +111,7 @@ $csrf_token = generateCSRFToken();
                     <i class="fas fa-check-circle mr-2"></i>
                     <?php echo htmlspecialchars($success_message); ?>
                     <div class="mt-4">
-                        <a href="login.php" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <a href="login" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
                         </a>
                     </div>
@@ -318,8 +318,8 @@ $csrf_token = generateCSRFToken();
                         class="mt-1 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-blue-600 focus:ring-white focus:ring-opacity-50"
                         required>
                     <label for="agree_terms" class="text-sm text-white">
-                        Saya menyetujui <a href="terms.php" class="text-blue-200 hover:text-white underline" target="_blank">Syarat dan Ketentuan</a>
-                        serta <a href="privacy.php" class="text-blue-200 hover:text-white underline" target="_blank">Kebijakan Privasi</a>
+                        Saya menyetujui <a href="terms" class="text-blue-200 hover:text-white underline" target="_blank">Syarat dan Ketentuan</a>
+                        serta <a href="privacy" class="text-blue-200 hover:text-white underline" target="_blank">Kebijakan Privasi</a>
                     </label>
                 </div>
 
@@ -340,7 +340,7 @@ $csrf_token = generateCSRFToken();
             <!-- Login Link -->
             <div class="text-center">
                 <p class="text-blue-100 mb-4">Sudah punya akun?</p>
-                <a href="login.php"
+                <a href="login"
                     class="inline-flex items-center justify-center w-full bg-transparent border-2 border-white text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200">
                     <i class="fas fa-sign-in-alt mr-2"></i>Masuk ke Akun
                 </a>

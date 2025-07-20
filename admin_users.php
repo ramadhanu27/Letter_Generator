@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/database.php';
 require_once 'classes/Admin.php';
 
@@ -15,11 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Token keamanan tidak valid. Silakan refresh halaman.';
     } else {
         $action = $_POST['action'] ?? '';
-        
+
         if ($action === 'toggle_status') {
             $user_id = (int)($_POST['user_id'] ?? 0);
             $is_active = isset($_POST['is_active']);
-            
+
             if (Admin::updateUserStatus($user_id, $is_active)) {
                 $success_message = 'Status pengguna berhasil diperbarui.';
             } else {
@@ -27,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } elseif ($action === 'delete_user') {
             $user_id = (int)($_POST['user_id'] ?? 0);
-            
+
             // Prevent admin from deleting themselves
             if ($user_id === $current_user['id']) {
                 $error_message = 'Anda tidak dapat menghapus akun sendiri.';
@@ -41,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'reset_password') {
             $user_id = (int)($_POST['user_id'] ?? 0);
             $new_password = $_POST['new_password'] ?? '';
-            
+
             if (strlen($new_password) < 8) {
                 $error_message = 'Password minimal 8 karakter.';
             } else {
@@ -68,6 +69,7 @@ $csrf_token = generateCSRFToken();
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +82,7 @@ $csrf_token = generateCSRFToken();
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Admin Navigation -->
     <nav class="admin-gradient shadow-lg">
@@ -108,7 +111,7 @@ $csrf_token = generateCSRFToken();
                         </a>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-blue-100 hover:text-white transition-colors text-sm">
                         <i class="fas fa-user mr-1"></i>Mode User
@@ -153,11 +156,11 @@ $csrf_token = generateCSRFToken();
             <form method="GET" class="grid md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cari Pengguna</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="Nama, email, atau username..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
+                        placeholder="Nama, email, atau username..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                     <select name="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -166,7 +169,7 @@ $csrf_token = generateCSRFToken();
                         <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Admin</option>
                     </select>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -175,7 +178,7 @@ $csrf_token = generateCSRFToken();
                         <option value="inactive" <?php echo $status_filter === 'inactive' ? 'selected' : ''; ?>>Nonaktif</option>
                     </select>
                 </div>
-                
+
                 <div class="flex items-end space-x-2">
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         <i class="fas fa-search mr-2"></i>Filter
@@ -197,7 +200,7 @@ $csrf_token = generateCSRFToken();
                     Daftar Pengguna (<?php echo number_format($users_data['total']); ?> total)
                 </h3>
             </div>
-            
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -256,24 +259,24 @@ $csrf_token = generateCSRFToken();
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <button onclick="viewUser(<?php echo $user['id']; ?>)" 
-                                                class="text-blue-600 hover:text-blue-900">
+                                        <button onclick="viewUser(<?php echo $user['id']; ?>)"
+                                            class="text-blue-600 hover:text-blue-900">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        
+
                                         <?php if ($user['id'] !== $current_user['id']): ?>
-                                            <button onclick="toggleUserStatus(<?php echo $user['id']; ?>, <?php echo $user['is_active'] ? 'false' : 'true'; ?>)" 
-                                                    class="text-yellow-600 hover:text-yellow-900">
+                                            <button onclick="toggleUserStatus(<?php echo $user['id']; ?>, <?php echo $user['is_active'] ? 'false' : 'true'; ?>)"
+                                                class="text-yellow-600 hover:text-yellow-900">
                                                 <i class="fas <?php echo $user['is_active'] ? 'fa-ban' : 'fa-check'; ?>"></i>
                                             </button>
-                                            
-                                            <button onclick="resetPassword(<?php echo $user['id']; ?>)" 
-                                                    class="text-orange-600 hover:text-orange-900">
+
+                                            <button onclick="resetPassword(<?php echo $user['id']; ?>)"
+                                                class="text-orange-600 hover:text-orange-900">
                                                 <i class="fas fa-key"></i>
                                             </button>
-                                            
-                                            <button onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['full_name']); ?>')" 
-                                                    class="text-red-600 hover:text-red-900">
+
+                                            <button onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['full_name']); ?>')"
+                                                class="text-red-600 hover:text-red-900">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         <?php else: ?>
@@ -292,27 +295,27 @@ $csrf_token = generateCSRFToken();
                 <div class="px-6 py-4 border-t border-gray-200">
                     <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-500">
-                            Menampilkan <?php echo (($page - 1) * 20) + 1; ?> - <?php echo min($page * 20, $users_data['total']); ?> 
+                            Menampilkan <?php echo (($page - 1) * 20) + 1; ?> - <?php echo min($page * 20, $users_data['total']); ?>
                             dari <?php echo $users_data['total']; ?> pengguna
                         </div>
                         <nav class="flex space-x-2">
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>" 
-                                   class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>"
+                                    class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             <?php endif; ?>
-                            
+
                             <?php for ($i = max(1, $page - 2); $i <= min($users_data['pages'], $page + 2); $i++): ?>
-                                <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>" 
-                                   class="px-3 py-2 border rounded-lg transition-colors <?php echo $i === $page ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-300 hover:bg-gray-50'; ?>">
+                                <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>"
+                                    class="px-3 py-2 border rounded-lg transition-colors <?php echo $i === $page ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-300 hover:bg-gray-50'; ?>">
                                     <?php echo $i; ?>
                                 </a>
                             <?php endfor; ?>
-                            
+
                             <?php if ($page < $users_data['pages']): ?>
-                                <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>" 
-                                   class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role_filter; ?>&status=<?php echo $status_filter; ?>"
+                                    class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             <?php endif; ?>
@@ -385,4 +388,5 @@ $csrf_token = generateCSRFToken();
         }
     </script>
 </body>
+
 </html>

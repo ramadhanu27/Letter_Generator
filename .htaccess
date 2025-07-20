@@ -136,15 +136,37 @@ RewriteRule ^ %1 [R=301,L]
 RewriteCond %{THE_REQUEST} /index\.html[\s?] [NC]
 RewriteRule ^index\.html$ / [R=301,L]
 
+# Remove .php extension from URLs
+
+# First, redirect .php URLs to clean URLs
+
+RewriteCond %{THE_REQUEST} /([^.]+)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# Then, internally rewrite clean URLs to .php files
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^.]+)$ $1.php [L]
+
+# Special admin routes
+
+RewriteRule ^admin$ admin.php [L]
+RewriteRule ^admin/users$ admin_users.php [L]
+RewriteRule ^admin/logs$ admin_logs.php [L]
+RewriteRule ^admin/login$ admin_login.php [L]
+RewriteRule ^admin/register$ admin_register.php [L]
+
 # API routing
 
 RewriteRule ^api/(.\*)$ api/$1 [L,QSA]
 
 # Custom error pages
 
-ErrorDocument 404 /404.php
-ErrorDocument 403 /403.php
-ErrorDocument 500 /500.php
+ErrorDocument 404 /surat/404.php
+ErrorDocument 403 /surat/403.php
+ErrorDocument 500 /surat/500.php
 
 # Prevent access to backup files
 

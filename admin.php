@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/database.php';
 require_once 'classes/Admin.php';
 
@@ -12,12 +13,12 @@ $stats = Admin::getDashboardStats();
 try {
     $database = new Database();
     $conn = $database->getConnection();
-    
+
     // Recent user registrations
     $stmt = $conn->prepare("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT 5");
     $stmt->execute();
     $recent_users = $stmt->fetchAll();
-    
+
     // Recent letters
     $stmt = $conn->prepare("
         SELECT gl.*, u.full_name, u.email 
@@ -28,7 +29,7 @@ try {
     ");
     $stmt->execute();
     $recent_letters = $stmt->fetchAll();
-    
+
     // Recent admin activities
     $stmt = $conn->prepare("
         SELECT al.*, u.full_name as admin_name 
@@ -39,7 +40,7 @@ try {
     ");
     $stmt->execute();
     $recent_admin_activities = $stmt->fetchAll();
-    
+
     // Monthly statistics for chart
     $stmt = $conn->prepare("
         SELECT 
@@ -64,7 +65,6 @@ try {
     ");
     $stmt->execute();
     $monthly_stats = $stmt->fetchAll();
-    
 } catch (Exception $e) {
     $recent_users = [];
     $recent_letters = [];
@@ -78,6 +78,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -89,18 +90,22 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
         .admin-gradient {
             background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
         }
+
         .stat-card {
             transition: all 0.3s ease;
         }
+
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
+
         .admin-sidebar {
             background: linear-gradient(180deg, #1e40af 0%, #7c3aed 100%);
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Admin Navigation -->
     <nav class="admin-gradient shadow-lg">
@@ -129,7 +134,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                         </a>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-blue-100 hover:text-white transition-colors text-sm">
                         <i class="fas fa-user mr-1"></i>Mode User
@@ -170,7 +175,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                     </div>
                 </div>
             </div>
-            
+
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -183,7 +188,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                     </div>
                 </div>
             </div>
-            
+
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-purple-100 rounded-lg">
@@ -196,7 +201,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                     </div>
                 </div>
             </div>
-            
+
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-orange-100 rounded-lg">
@@ -220,7 +225,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                 </h3>
                 <canvas id="monthlyChart" width="400" height="200"></canvas>
             </div>
-            
+
             <!-- Quick Actions -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">
@@ -236,7 +241,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                             <p class="text-sm text-gray-500">Manajemen pengguna</p>
                         </div>
                     </a>
-                    
+
                     <a href="admin_content.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="p-2 bg-green-100 rounded-lg mr-3">
                             <i class="fas fa-file-alt text-green-600"></i>
@@ -246,7 +251,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                             <p class="text-sm text-gray-500">Surat & template</p>
                         </div>
                     </a>
-                    
+
                     <a href="admin_logs.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="p-2 bg-purple-100 rounded-lg mr-3">
                             <i class="fas fa-list-alt text-purple-600"></i>
@@ -256,7 +261,7 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                             <p class="text-sm text-gray-500">Monitor aktivitas</p>
                         </div>
                     </a>
-                    
+
                     <a href="admin_settings.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="p-2 bg-orange-100 rounded-lg mr-3">
                             <i class="fas fa-cog text-orange-600"></i>
@@ -346,19 +351,19 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm text-gray-900">
-                                    <?php 
-                                        $action_names = [
-                                            'dashboard_accessed' => 'Mengakses dashboard',
-                                            'user_activated' => 'Mengaktifkan user',
-                                            'user_deactivated' => 'Menonaktifkan user',
-                                            'user_deleted' => 'Menghapus user',
-                                            'setting_updated' => 'Memperbarui pengaturan'
-                                        ];
-                                        echo $action_names[$activity['action']] ?? $activity['action'];
+                                    <?php
+                                    $action_names = [
+                                        'dashboard_accessed' => 'Mengakses dashboard',
+                                        'user_activated' => 'Mengaktifkan user',
+                                        'user_deactivated' => 'Menonaktifkan user',
+                                        'user_deleted' => 'Menghapus user',
+                                        'setting_updated' => 'Memperbarui pengaturan'
+                                    ];
+                                    echo $action_names[$activity['action']] ?? $activity['action'];
                                     ?>
                                 </p>
                                 <p class="text-xs text-gray-500">
-                                    <?php echo htmlspecialchars($activity['admin_name']); ?> - 
+                                    <?php echo htmlspecialchars($activity['admin_name']); ?> -
                                     <?php echo date('d M H:i', strtotime($activity['created_at'])); ?>
                                 </p>
                             </div>
@@ -377,27 +382,27 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
     <script>
         // Monthly Statistics Chart
         const ctx = document.getElementById('monthlyChart').getContext('2d');
-        
+
         // Process PHP data for Chart.js
         const monthlyData = <?php echo json_encode($monthly_stats); ?>;
         const months = [...new Set(monthlyData.map(item => item.month))].sort().reverse().slice(0, 6);
-        
+
         const usersData = months.map(month => {
             const item = monthlyData.find(d => d.month === month && d.type === 'users');
             return item ? parseInt(item.count) : 0;
         });
-        
+
         const lettersData = months.map(month => {
             const item = monthlyData.find(d => d.month === month && d.type === 'letters');
             return item ? parseInt(item.count) : 0;
         });
-        
+
         const monthLabels = months.map(month => {
             const [year, monthNum] = month.split('-');
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
             return monthNames[parseInt(monthNum) - 1] + ' ' + year;
         });
-        
+
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -432,4 +437,5 @@ Admin::logActivity('dashboard_accessed', 'system', null, 'Admin accessed dashboa
         });
     </script>
 </body>
+
 </html>
