@@ -1,6 +1,6 @@
 <?php
-require_once '../config/database.php';
-require_once '../app/models/Admin.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../app/models/Admin.php';
 
 // Require admin access
 Admin::requireAdmin();

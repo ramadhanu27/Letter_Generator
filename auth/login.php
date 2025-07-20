@@ -1,6 +1,6 @@
 <?php
-require_once '../config/database.php';
-require_once '../app/models/User.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../app/models/User.php';
 
 // Prevent redirect loops
 if (!isset($_SESSION['login_redirect_count'])) {

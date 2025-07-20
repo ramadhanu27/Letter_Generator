@@ -1,19 +1,22 @@
 <?php
+
 /**
  * Password Reset Class
  * Indonesian PDF Letter Generator
  */
 
+require_once __DIR__ . '/../../config/database.php';
+
 class PasswordReset
 {
     private $conn;
-    
+
     public function __construct()
     {
         $database = new Database();
         $this->conn = $database->getConnection();
     }
-    
+
     /**
      * Generate and send password reset token
      */
@@ -28,7 +31,7 @@ class PasswordReset
             ");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
-            
+
             if (!$user) {
                 $this->logResetAttempt($email, 'request', false, 'User not found or inactive');
                 return [
@@ -36,7 +39,7 @@ class PasswordReset
                     'message' => 'Jika email terdaftar, link reset password akan dikirim.'
                 ];
             }
-            
+
             // Check for recent reset requests (rate limiting)
             $stmt = $this->conn->prepare("
                 SELECT COUNT(*) as count 
@@ -45,7 +48,7 @@ class PasswordReset
             ");
             $stmt->execute([$user['id']]);
             $recent_requests = $stmt->fetch()['count'];
-            
+
             if ($recent_requests > 0) {
                 $this->logResetAttempt($email, 'request', false, 'Rate limit exceeded');
                 return [
@@ -53,21 +56,21 @@ class PasswordReset
                     'message' => 'Permintaan reset password terlalu sering. Silakan tunggu 5 menit.'
                 ];
             }
-            
+
             // Generate secure token
             $token = bin2hex(random_bytes(32));
             $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
+
             // Store token in database
             $stmt = $this->conn->prepare("
                 INSERT INTO password_reset_tokens 
                 (user_id, email, token, expires_at, ip_address, user_agent) 
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
-            
+
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-            
+
             $stmt->execute([
                 $user['id'],
                 $email,
@@ -76,11 +79,11 @@ class PasswordReset
                 $ip_address,
                 $user_agent
             ]);
-            
+
             // Send reset email
             $reset_link = $this->generateResetLink($token);
             $email_sent = $this->sendResetEmail($user, $reset_link, $token);
-            
+
             if ($email_sent) {
                 $this->logResetAttempt($email, 'request', true, 'Reset token sent successfully');
                 return [
@@ -94,7 +97,6 @@ class PasswordReset
                     'message' => 'Gagal mengirim email. Silakan coba lagi.'
                 ];
             }
-            
         } catch (Exception $e) {
             error_log("Password reset error: " . $e->getMessage());
             $this->logResetAttempt($email, 'request', false, 'System error: ' . $e->getMessage());
@@ -104,7 +106,7 @@ class PasswordReset
             ];
         }
     }
-    
+
     /**
      * Verify reset token
      */
@@ -119,7 +121,7 @@ class PasswordReset
             ");
             $stmt->execute([$token]);
             $reset_data = $stmt->fetch();
-            
+
             if (!$reset_data) {
                 $this->logResetAttempt('', 'invalid', false, 'Invalid or expired token');
                 return [
@@ -127,12 +129,11 @@ class PasswordReset
                     'message' => 'Token reset password tidak valid atau sudah expired.'
                 ];
             }
-            
+
             return [
                 'success' => true,
                 'data' => $reset_data
             ];
-            
         } catch (Exception $e) {
             error_log("Token verification error: " . $e->getMessage());
             return [
@@ -141,7 +142,7 @@ class PasswordReset
             ];
         }
     }
-    
+
     /**
      * Reset password with token
      */
@@ -153,9 +154,9 @@ class PasswordReset
             if (!$verification['success']) {
                 return $verification;
             }
-            
+
             $reset_data = $verification['data'];
-            
+
             // Validate password strength
             if (strlen($new_password) < 6) {
                 return [
@@ -163,10 +164,10 @@ class PasswordReset
                     'message' => 'Password minimal 6 karakter.'
                 ];
             }
-            
+
             // Hash new password
             $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
-            
+
             // Update user password
             $stmt = $this->conn->prepare("
                 UPDATE users 
@@ -174,7 +175,7 @@ class PasswordReset
                 WHERE id = ?
             ");
             $stmt->execute([$password_hash, $reset_data['user_id']]);
-            
+
             // Mark token as used
             $stmt = $this->conn->prepare("
                 UPDATE password_reset_tokens 
@@ -182,14 +183,13 @@ class PasswordReset
                 WHERE token = ?
             ");
             $stmt->execute([$token]);
-            
+
             $this->logResetAttempt($reset_data['email'], 'reset', true, 'Password reset successful');
-            
+
             return [
                 'success' => true,
                 'message' => 'Password berhasil direset. Silakan login dengan password baru.'
             ];
-            
         } catch (Exception $e) {
             error_log("Password reset error: " . $e->getMessage());
             $this->logResetAttempt('', 'reset', false, 'System error: ' . $e->getMessage());
@@ -199,7 +199,7 @@ class PasswordReset
             ];
         }
     }
-    
+
     /**
      * Generate reset link
      */
@@ -208,7 +208,7 @@ class PasswordReset
         $base_url = $this->getBaseUrl();
         return $base_url . '/reset-password?token=' . $token;
     }
-    
+
     /**
      * Get base URL
      */
@@ -219,16 +219,16 @@ class PasswordReset
         $path = dirname($_SERVER['SCRIPT_NAME'] ?? '');
         return $protocol . '://' . $host . $path;
     }
-    
+
     /**
      * Send reset email
      */
     private function sendResetEmail($user, $reset_link, $token)
     {
         $subject = 'Reset Password - Indonesian PDF Letter Generator';
-        
+
         $message = $this->getEmailTemplate($user, $reset_link);
-        
+
         $headers = [
             'MIME-Version: 1.0',
             'Content-type: text/html; charset=UTF-8',
@@ -236,14 +236,14 @@ class PasswordReset
             'Reply-To: noreply@lettergen.com',
             'X-Mailer: PHP/' . phpversion()
         ];
-        
+
         // Try to send email, fallback to file-based email for development
         $mail_sent = false;
-        
+
         if (function_exists('mail')) {
             $mail_sent = mail($user['email'], $subject, $message, implode("\r\n", $headers));
         }
-        
+
         // If mail() fails, try file-based email for development
         if (!$mail_sent) {
             $file_mail_path = __DIR__ . '/../includes/file_mail.php';
@@ -253,10 +253,10 @@ class PasswordReset
                 error_log("Password reset email sent via file-based system. Token: $token, Email: {$user['email']}");
             }
         }
-        
+
         return $mail_sent;
     }
-    
+
     /**
      * Get email template
      */
@@ -314,7 +314,7 @@ class PasswordReset
         </body>
         </html>";
     }
-    
+
     /**
      * Log reset attempt
      */
@@ -326,10 +326,10 @@ class PasswordReset
                 (email, action, ip_address, user_agent, success, message) 
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
-            
+
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-            
+
             $stmt->execute([
                 $email,
                 $action,
@@ -342,7 +342,7 @@ class PasswordReset
             error_log("Failed to log reset attempt: " . $e->getMessage());
         }
     }
-    
+
     /**
      * Clean up expired tokens
      */
@@ -354,7 +354,7 @@ class PasswordReset
                 WHERE expires_at < NOW() OR used = 1
             ");
             $stmt->execute();
-            
+
             return $stmt->rowCount();
         } catch (Exception $e) {
             error_log("Failed to cleanup expired tokens: " . $e->getMessage());
@@ -362,4 +362,3 @@ class PasswordReset
         }
     }
 }
-?>
