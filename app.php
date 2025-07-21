@@ -1,6 +1,6 @@
 <?php
-require_once 'config/database.php';
-require_once 'classes/User.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/models/User.php';
 
 // Require login
 User::requireLogin();
@@ -9,6 +9,7 @@ $current_user = User::getCurrentUser();
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,15 +21,18 @@ $current_user = User::getCurrentUser();
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .card-hover {
             transition: all 0.3s ease;
         }
+
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
@@ -40,7 +44,7 @@ $current_user = User::getCurrentUser();
                         <span class="text-white text-xl font-bold">Letter Generator</span>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-white hover:text-blue-200 transition-colors">
                         <i class="fas fa-home mr-1"></i>Dashboard
@@ -81,20 +85,20 @@ $current_user = User::getCurrentUser();
                             <option value="izin">📝 Surat Izin (Universal)</option>
                             <option value="kuasa">🤝 Surat Kuasa</option>
                         </select>
-                        
+
                         <!-- Tombol Contoh untuk Surat Izin -->
                         <div id="contoh-buttons" class="mt-4 hidden">
                             <p class="text-sm text-gray-600 mb-2">💡 Isi dengan contoh data:</p>
                             <div class="flex flex-wrap gap-2">
-                                <button type="button" id="contoh-karyawan" 
+                                <button type="button" id="contoh-karyawan"
                                     class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
                                     👔 Karyawan
                                 </button>
-                                <button type="button" id="contoh-mahasiswa" 
+                                <button type="button" id="contoh-mahasiswa"
                                     class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors">
                                     🎓 Mahasiswa
                                 </button>
-                                <button type="button" id="contoh-siswa" 
+                                <button type="button" id="contoh-siswa"
                                     class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
                                     📚 Siswa
                                 </button>
@@ -180,7 +184,7 @@ $current_user = User::getCurrentUser();
 
     <!-- Include the original script.js with modifications -->
     <script src="script.js"></script>
-    
+
     <script>
         // Override some functions to work with authenticated user
         document.addEventListener('DOMContentLoaded', function() {
@@ -196,12 +200,12 @@ $current_user = User::getCurrentUser();
                 if (namaField && !namaField.value) {
                     namaField.value = userData.nama;
                 }
-                
+
                 const emailField = document.getElementById('email');
                 if (emailField && !emailField.value) {
                     emailField.value = userData.email;
                 }
-                
+
                 updatePreview();
             }
 
@@ -234,9 +238,9 @@ $current_user = User::getCurrentUser();
                     ${message}
                 </div>
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.style.opacity = '0';
                 setTimeout(() => notification.remove(), 300);
@@ -249,4 +253,5 @@ $current_user = User::getCurrentUser();
         }, 1000);
     </script>
 </body>
+
 </html>

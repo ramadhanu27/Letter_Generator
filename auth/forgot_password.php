@@ -5,7 +5,7 @@ require_once __DIR__ . '/../app/models/PasswordReset.php';
 
 // Redirect if already logged in
 if (User::isLoggedIn()) {
-    header('Location: ../app/views/user/dashboard.php');
+    header('Location: ../dashboard');
     exit;
 }
 

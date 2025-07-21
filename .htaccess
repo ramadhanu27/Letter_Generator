@@ -195,9 +195,13 @@ RewriteRule ^admin/logs$ admin/logs.php [L]
 RewriteRule ^admin/login$ admin/login.php [L]
 RewriteRule ^admin/register$ admin/register.php [L]
 
+# Home route
+RewriteRule ^home$ home.php [L]
+
 # Authentication routes
 RewriteRule ^login$ auth/login.php [L]
 RewriteRule ^register$ auth/register.php [L]
+RewriteRule ^logout$ auth/logout.php [L]
 RewriteRule ^forgot-password$ auth/forgot_password.php [L]
 RewriteRule ^reset-password$ auth/reset_password.php [L]
 

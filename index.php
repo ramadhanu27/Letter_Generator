@@ -16,15 +16,6 @@ if ($_SESSION['redirect_count'] > 3) {
     die('Redirect loop detected. Please clear your browser cache and cookies, then try again.');
 }
 
-// Check if user is logged in
-if (User::isLoggedIn()) {
-    // Reset redirect count on successful access
-    unset($_SESSION['redirect_count']);
-    // Redirect to dashboard
-    header('Location: app/views/user/dashboard.php');
-    exit;
-} else {
-    // Redirect to login
-    header('Location: auth/login.php');
-    exit;
-}
+// Always redirect to home page for better user experience
+header('Location: home');
+exit;

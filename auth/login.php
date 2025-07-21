@@ -12,7 +12,7 @@ if (User::isLoggedIn() && !isset($_GET['force'])) {
     $_SESSION['login_redirect_count']++;
 
     if ($_SESSION['login_redirect_count'] < 3) {
-        header('Location: ../app/views/user/dashboard.php');
+        header('Location: ../dashboard');
         exit;
     } else {
         // Reset counter and show error
@@ -85,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Redirect based on role
                     if ($user_data['role'] === 'admin') {
-                        header('Location: ../admin/index.php');
+                        header('Location: ../admin');
                     } else {
-                        $redirect_url = $_GET['redirect'] ?? '../app/views/user/dashboard.php';
+                        $redirect_url = $_GET['redirect'] ?? '../dashboard';
                         header("Location: $redirect_url");
                     }
                     exit;
