@@ -4,7 +4,7 @@ require_once __DIR__ . '/../app/models/User.php';
 
 // Redirect if already logged in
 if (User::isLoggedIn()) {
-    header('Location: ../app/views/user/dashboard.php');
+    header('Location: /surat/dashboard');
     exit;
 }
 
@@ -67,31 +67,126 @@ $csrf_token = generateCSRFToken();
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Indonesian Professional Color Scheme - Darker Palette */
+        :root {
+            --primary-blue: #1E40AF;
+            --primary-navy: #1E293B;
+            --dark-navy: #0F172A;
+            --indonesian-red: #B91C1C;
+            --golden-yellow: #D97706;
+            --emerald-green: #047857;
+            --slate-gray: #334155;
+            --cool-gray: #475569;
+            --light-gray: #F1F5F9;
+            --warm-orange: #C2410C;
+            --success-green: #15803D;
+            --warning-amber: #B45309;
+            --info-blue: #0369A1;
+            --white: #FFFFFF;
+            --black: #0F172A;
+            --text-primary: #F8FAFC;
+            --text-secondary: #E2E8F0;
+        }
+
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Darker gradient for better contrast */
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 30%, #334155 70%, #475569 100%);
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+            pointer-events: none;
+        }
+
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Ccircle cx='50' cy='50' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .register-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF, #1E293B);
+            color: var(--white);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1D4ED8, #0F172A);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(30, 64, 175, 0.4);
+            border-color: #3B82F6;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: var(--white);
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #EAB308, #CA8A04);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.4);
+            border-color: #FCD34D;
+        }
+
+        .input-field {
+            background: rgba(248, 250, 252, 0.9);
+            border: 2px solid rgba(51, 65, 85, 0.2);
+            color: var(--slate-gray);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+            outline: none;
+        }
+
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 
-<body class="gradient-bg min-h-screen py-8 px-4">
-    <div class="max-w-2xl mx-auto">
+<body class="gradient-bg hero-pattern min-h-screen py-8 px-4">
+    <div class="max-w-2xl mx-auto register-container">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
-                <i class="fas fa-file-pdf text-2xl text-blue-600"></i>
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-2xl mb-6" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                <i class="fas fa-file-pdf text-3xl text-white"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Letter Generator</h1>
-            <p class="text-blue-100">Buat akun baru untuk mulai membuat surat</p>
+            <h1 class="text-4xl font-bold mb-3 text-shadow" style="color: var(--text-primary);">Letter Generator</h1>
+            <p class="text-xl" style="color: var(--text-secondary);">Buat akun baru untuk mulai membuat surat</p>
         </div>
 
         <!-- Registration Form -->
-        <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+        <div class="glass-effect rounded-3xl p-10 shadow-2xl border-2 border-white border-opacity-20">
             <?php if (!empty($error_messages)): ?>
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
                     <div class="flex items-center mb-2">
@@ -111,8 +206,8 @@ $csrf_token = generateCSRFToken();
                     <i class="fas fa-check-circle mr-2"></i>
                     <?php echo htmlspecialchars($success_message); ?>
                     <div class="mt-4">
-                        <a href="login" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                            <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
+                        <a href="/surat/login" class="inline-flex items-center px-6 py-3 rounded-xl font-bold transition-all duration-200 transform hover:scale-105" style="background: linear-gradient(135deg, #10B981, #059669); color: white; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">
+                            <i class="fas fa-sign-in-alt mr-3"></i>Login Sekarang
                         </a>
                     </div>
                 </div>
@@ -122,79 +217,81 @@ $csrf_token = generateCSRFToken();
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 
                 <!-- Account Information -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-white border-b border-white border-opacity-30 pb-2">
-                        <i class="fas fa-user-circle mr-2"></i>Informasi Akun
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold border-b-2 border-gray-300 pb-3" style="color: var(--slate-gray);">
+                        <i class="fas fa-user-circle mr-3" style="color: var(--primary-blue);"></i>Informasi Akun
                     </h3>
 
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <!-- Username -->
                         <div>
-                            <label for="username" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-user mr-2"></i>Username *
+                            <label for="username" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-user mr-2" style="color: var(--primary-blue);"></i>Username *
                             </label>
                             <input type="text"
                                 id="username"
                                 name="username"
                                 value="<?php echo htmlspecialchars($form_data['username'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="Masukkan username"
                                 required>
                         </div>
 
                         <!-- Email -->
                         <div>
-                            <label for="email" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-envelope mr-2"></i>Email *
+                            <label for="email" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-envelope mr-2" style="color: var(--primary-blue);"></i>Email *
                             </label>
                             <input type="email"
                                 id="email"
                                 name="email"
                                 value="<?php echo htmlspecialchars($form_data['email'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="Masukkan email"
                                 required>
                         </div>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <!-- Password -->
                         <div>
-                            <label for="password" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-lock mr-2"></i>Password *
+                            <label for="password" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-lock mr-2" style="color: var(--primary-blue);"></i>Password *
                             </label>
                             <div class="relative">
                                 <input type="password"
                                     id="password"
                                     name="password"
-                                    class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 pr-12"
+                                    class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400 pr-14"
                                     placeholder="Minimal 8 karakter"
                                     required>
                                 <button type="button"
                                     onclick="togglePassword('password')"
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-100 hover:text-white transition-colors">
-                                    <i id="password-icon" class="fas fa-eye"></i>
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors"
+                                    style="color: var(--slate-gray);">
+                                    <i id="password-icon" class="fas fa-eye text-xl"></i>
                                 </button>
                             </div>
-                            <p class="text-xs text-blue-100 mt-1">Minimal 8 karakter dengan huruf besar, kecil, dan angka</p>
+                            <p class="text-xs mt-2" style="color: var(--slate-gray);">Minimal 8 karakter dengan huruf besar, kecil, dan angka</p>
                         </div>
 
                         <!-- Confirm Password -->
                         <div>
-                            <label for="confirm_password" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-lock mr-2"></i>Konfirmasi Password *
+                            <label for="confirm_password" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-lock mr-2" style="color: var(--primary-blue);"></i>Konfirmasi Password *
                             </label>
                             <div class="relative">
                                 <input type="password"
                                     id="confirm_password"
                                     name="confirm_password"
-                                    class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 pr-12"
+                                    class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400 pr-14"
                                     placeholder="Ulangi password"
                                     required>
                                 <button type="button"
                                     onclick="togglePassword('confirm_password')"
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-100 hover:text-white transition-colors">
-                                    <i id="confirm-password-icon" class="fas fa-eye"></i>
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors"
+                                    style="color: var(--slate-gray);">
+                                    <i id="confirm-password-icon" class="fas fa-eye text-xl"></i>
                                 </button>
                             </div>
                         </div>
@@ -202,160 +299,161 @@ $csrf_token = generateCSRFToken();
                 </div>
 
                 <!-- Personal Information -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-white border-b border-white border-opacity-30 pb-2">
-                        <i class="fas fa-id-card mr-2"></i>Informasi Pribadi
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold border-b-2 border-gray-300 pb-3" style="color: var(--slate-gray);">
+                        <i class="fas fa-id-card mr-3" style="color: var(--primary-blue);"></i>Informasi Pribadi
                     </h3>
 
                     <!-- Full Name -->
                     <div>
-                        <label for="full_name" class="block text-sm font-medium text-white mb-2">
-                            <i class="fas fa-user mr-2"></i>Nama Lengkap *
+                        <label for="full_name" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                            <i class="fas fa-user mr-2" style="color: var(--primary-blue);"></i>Nama Lengkap *
                         </label>
                         <input type="text"
                             id="full_name"
                             name="full_name"
                             value="<?php echo htmlspecialchars($form_data['full_name'] ?? ''); ?>"
-                            class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                            class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                             placeholder="Masukkan nama lengkap"
                             required>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <!-- Phone -->
                         <div>
-                            <label for="phone" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-phone mr-2"></i>Nomor Telepon
+                            <label for="phone" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-phone mr-2" style="color: var(--primary-blue);"></i>Nomor Telepon
                             </label>
                             <input type="tel"
                                 id="phone"
                                 name="phone"
                                 value="<?php echo htmlspecialchars($form_data['phone'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="08xxxxxxxxxx">
                         </div>
 
                         <!-- Organization -->
                         <div>
-                            <label for="organization" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-building mr-2"></i>Organisasi/Perusahaan
+                            <label for="organization" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-building mr-2" style="color: var(--primary-blue);"></i>Organisasi/Perusahaan
                             </label>
                             <input type="text"
                                 id="organization"
                                 name="organization"
                                 value="<?php echo htmlspecialchars($form_data['organization'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="PT ABC, Universitas XYZ">
                         </div>
                     </div>
 
                     <!-- Position -->
                     <div>
-                        <label for="position" class="block text-sm font-medium text-white mb-2">
-                            <i class="fas fa-briefcase mr-2"></i>Jabatan/Posisi
+                        <label for="position" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                            <i class="fas fa-briefcase mr-2" style="color: var(--primary-blue);"></i>Jabatan/Posisi
                         </label>
                         <input type="text"
                             id="position"
                             name="position"
                             value="<?php echo htmlspecialchars($form_data['position'] ?? ''); ?>"
-                            class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                            class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                             placeholder="Manager, Mahasiswa, Karyawan">
                     </div>
                 </div>
 
                 <!-- Address Information -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-white border-b border-white border-opacity-30 pb-2">
-                        <i class="fas fa-map-marker-alt mr-2"></i>Informasi Alamat (Opsional)
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold border-b-2 border-gray-300 pb-3" style="color: var(--slate-gray);">
+                        <i class="fas fa-map-marker-alt mr-3" style="color: var(--primary-blue);"></i>Informasi Alamat (Opsional)
                     </h3>
 
                     <!-- Address -->
                     <div>
-                        <label for="address" class="block text-sm font-medium text-white mb-2">
-                            <i class="fas fa-home mr-2"></i>Alamat
+                        <label for="address" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                            <i class="fas fa-home mr-2" style="color: var(--primary-blue);"></i>Alamat
                         </label>
                         <textarea id="address"
                             name="address"
-                            rows="2"
-                            class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 resize-none"
+                            rows="3"
+                            class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400 resize-none"
                             placeholder="Jl. Contoh No. 123, RT/RW"><?php echo htmlspecialchars($form_data['address'] ?? ''); ?></textarea>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <!-- City -->
                         <div>
-                            <label for="city" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-city mr-2"></i>Kota
+                            <label for="city" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-city mr-2" style="color: var(--primary-blue);"></i>Kota
                             </label>
                             <input type="text"
                                 id="city"
                                 name="city"
                                 value="<?php echo htmlspecialchars($form_data['city'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="Jakarta, Bandung, Surabaya">
                         </div>
 
                         <!-- Province -->
                         <div>
-                            <label for="province" class="block text-sm font-medium text-white mb-2">
-                                <i class="fas fa-map mr-2"></i>Provinsi
+                            <label for="province" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                                <i class="fas fa-map mr-2" style="color: var(--primary-blue);"></i>Provinsi
                             </label>
                             <input type="text"
                                 id="province"
                                 name="province"
                                 value="<?php echo htmlspecialchars($form_data['province'] ?? ''); ?>"
-                                class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                                class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                                 placeholder="DKI Jakarta, Jawa Barat">
                         </div>
                     </div>
                 </div>
 
                 <!-- Terms Agreement -->
-                <div class="flex items-start space-x-3">
+                <div class="flex items-start space-x-4 p-4 rounded-xl" style="background: rgba(248, 250, 252, 0.1); border: 1px solid rgba(51, 65, 85, 0.2);">
                     <input type="checkbox"
                         id="agree_terms"
                         name="agree_terms"
-                        class="mt-1 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-blue-600 focus:ring-white focus:ring-opacity-50"
+                        class="mt-1 w-5 h-5 rounded border-2 focus:ring-2 focus:ring-blue-500"
+                        style="border-color: var(--primary-blue); accent-color: var(--primary-blue);"
                         required>
-                    <label for="agree_terms" class="text-sm text-white">
-                        Saya menyetujui <a href="terms" class="text-blue-200 hover:text-white underline" target="_blank">Syarat dan Ketentuan</a>
-                        serta <a href="privacy" class="text-blue-200 hover:text-white underline" target="_blank">Kebijakan Privasi</a>
+                    <label for="agree_terms" class="text-sm font-medium leading-relaxed" style="color: var(--slate-gray);">
+                        Saya menyetujui <a href="/surat/terms" class="font-semibold underline transition-colors" style="color: var(--primary-blue);" target="_blank">Syarat dan Ketentuan</a>
+                        serta <a href="/surat/privacy" class="font-semibold underline transition-colors" style="color: var(--primary-blue);" target="_blank">Kebijakan Privasi</a>
                     </label>
                 </div>
 
                 <!-- Register Button -->
                 <button type="submit"
-                    class="w-full bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200 transform hover:scale-105">
-                    <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
+                    class="btn-primary w-full py-4 px-6 rounded-xl text-lg font-bold flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-3"></i>Daftar Sekarang
                 </button>
             </form>
 
             <!-- Divider -->
-            <div class="my-6 flex items-center">
-                <div class="flex-1 border-t border-white border-opacity-30"></div>
-                <span class="px-4 text-sm text-blue-100">atau</span>
-                <div class="flex-1 border-t border-white border-opacity-30"></div>
+            <div class="my-8 flex items-center">
+                <div class="flex-1 border-t-2 border-gray-300"></div>
+                <span class="px-6 text-sm font-medium" style="color: var(--slate-gray);">atau</span>
+                <div class="flex-1 border-t-2 border-gray-300"></div>
             </div>
 
             <!-- Login Link -->
             <div class="text-center">
-                <p class="text-blue-100 mb-4">Sudah punya akun?</p>
-                <a href="login"
-                    class="inline-flex items-center justify-center w-full bg-transparent border-2 border-white text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Masuk ke Akun
+                <p class="mb-4 text-lg" style="color: var(--slate-gray);">Sudah punya akun?</p>
+                <a href="/surat/login"
+                    class="btn-secondary w-full py-4 px-6 rounded-xl text-lg font-bold flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-3"></i>Masuk ke Akun
                 </a>
             </div>
 
             <!-- Back to Home -->
-            <div class="text-center mt-6">
-                <a href="index.html" class="text-sm text-blue-100 hover:text-white transition-colors">
-                    <i class="fas fa-arrow-left mr-1"></i>Kembali ke Beranda
+            <div class="text-center mt-8">
+                <a href="/surat/home" class="text-sm font-medium transition-colors inline-flex items-center" style="color: var(--slate-gray);" onmouseover="this.style.color='var(--primary-blue)'" onmouseout="this.style.color='var(--slate-gray)'">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Beranda
                 </a>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-8 text-blue-100 text-sm">
+        <div class="text-center mt-12 text-sm font-medium" style="color: var(--text-secondary);">
             <p>&copy; 2025 Indonesian PDF Letter Generator. All rights reserved.</p>
         </div>
     </div>

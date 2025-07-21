@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/models/User.php';
 if (isset($_SESSION['user_id'])) {
     $current_user = User::getCurrentUser();
     if ($current_user && $current_user['role'] === 'admin') {
-        header('Location: index.php');
+        header('Location: /surat/admin');
         exit();
     }
 }
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Force redirect to admin dashboard
-                header('Location: index.php');
+                header('Location: /surat/admin');
                 exit();
             }
         } catch (Exception $e) {
@@ -140,7 +140,7 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['admin_remember_token'])) {
             $_SESSION['admin_login_time'] = time();
             $_SESSION['is_admin'] = true;
 
-            header('Location: index.php');
+            header('Location: /surat/admin');
             exit();
         }
     } catch (Exception $e) {

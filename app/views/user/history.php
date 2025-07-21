@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../app/models/User.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/app/models/User.php';
 
 // Require login
 User::requireLogin();
@@ -21,36 +21,36 @@ $search = $_GET['search'] ?? '';
 try {
     $database = new Database();
     $conn = $database->getConnection();
-    
+
     // Build WHERE clause
     $where_conditions = ["user_id = ?"];
     $params = [$current_user['id']];
-    
+
     if ($filter_type) {
         $where_conditions[] = "letter_type = ?";
         $params[] = $filter_type;
     }
-    
+
     if ($filter_date) {
         $where_conditions[] = "DATE(created_at) = ?";
         $params[] = $filter_date;
     }
-    
+
     if ($search) {
         $where_conditions[] = "(letter_title LIKE ? OR letter_data LIKE ?)";
         $params[] = "%$search%";
         $params[] = "%$search%";
     }
-    
+
     $where_clause = implode(" AND ", $where_conditions);
-    
+
     // Get total count for pagination
     $count_query = "SELECT COUNT(*) as total FROM generated_letters WHERE $where_clause";
     $stmt = $conn->prepare($count_query);
     $stmt->execute($params);
     $total_records = $stmt->fetch()['total'];
     $total_pages = ceil($total_records / $limit);
-    
+
     // Get letters with pagination
     $query = "
         SELECT * FROM generated_letters 
@@ -61,7 +61,7 @@ try {
     $stmt = $conn->prepare($query);
     $stmt->execute($params);
     $letters = $stmt->fetchAll();
-    
+
     // Get statistics
     $stats_query = "
         SELECT 
@@ -77,7 +77,6 @@ try {
     $stmt = $conn->prepare($stats_query);
     $stmt->execute([$current_user['id']]);
     $stats = $stmt->fetchAll();
-    
 } catch (Exception $e) {
     $letters = [];
     $total_records = 0;
@@ -88,6 +87,7 @@ try {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,15 +98,18 @@ try {
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .letter-card {
             transition: all 0.3s ease;
         }
+
         .letter-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
@@ -118,7 +121,7 @@ try {
                         <span class="text-white text-xl font-bold">Letter Generator</span>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-white hover:text-blue-200 transition-colors">
                         <i class="fas fa-home mr-1"></i>Dashboard
@@ -159,11 +162,11 @@ try {
             <form method="GET" class="grid md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cari Surat</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="Cari berdasarkan judul atau isi..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
+                        placeholder="Cari berdasarkan judul atau isi..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Surat</label>
                     <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
@@ -173,13 +176,13 @@ try {
                         <option value="kuasa" <?php echo $filter_type === 'kuasa' ? 'selected' : ''; ?>>Surat Kuasa</option>
                     </select>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
                     <input type="date" name="date" value="<?php echo htmlspecialchars($filter_date); ?>"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
-                
+
                 <div class="flex items-end space-x-2">
                     <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
                         <i class="fas fa-search mr-2"></i>Filter
@@ -204,7 +207,7 @@ try {
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -213,20 +216,20 @@ try {
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-900">Bulan Ini</h3>
                         <p class="text-3xl font-bold text-green-600">
-                            <?php 
-                                $this_month = 0;
-                                foreach ($stats as $stat) {
-                                    if (date('Y-m', strtotime($stat['date'])) === date('Y-m')) {
-                                        $this_month += $stat['count'];
-                                    }
+                            <?php
+                            $this_month = 0;
+                            foreach ($stats as $stat) {
+                                if (date('Y-m', strtotime($stat['date'])) === date('Y-m')) {
+                                    $this_month += $stat['count'];
                                 }
-                                echo $this_month;
+                            }
+                            echo $this_month;
                             ?>
                         </p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-purple-100 rounded-lg">
@@ -235,15 +238,15 @@ try {
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-900">Minggu Ini</h3>
                         <p class="text-3xl font-bold text-purple-600">
-                            <?php 
-                                $this_week = 0;
-                                $week_start = date('Y-m-d', strtotime('monday this week'));
-                                foreach ($stats as $stat) {
-                                    if ($stat['date'] >= $week_start) {
-                                        $this_week += $stat['count'];
-                                    }
+                            <?php
+                            $this_week = 0;
+                            $week_start = date('Y-m-d', strtotime('monday this week'));
+                            foreach ($stats as $stat) {
+                                if ($stat['date'] >= $week_start) {
+                                    $this_week += $stat['count'];
                                 }
-                                echo $this_week;
+                            }
+                            echo $this_week;
                             ?>
                         </p>
                     </div>
@@ -255,18 +258,18 @@ try {
         <?php if (!empty($letters)): ?>
             <div class="space-y-6">
                 <?php foreach ($letters as $letter): ?>
-                    <?php 
-                        $letter_data = json_decode($letter['letter_data'], true);
-                        $type_names = [
-                            'pernyataan' => 'Surat Pernyataan',
-                            'izin' => 'Surat Izin',
-                            'kuasa' => 'Surat Kuasa'
-                        ];
-                        $type_colors = [
-                            'pernyataan' => 'bg-blue-100 text-blue-800',
-                            'izin' => 'bg-green-100 text-green-800',
-                            'kuasa' => 'bg-purple-100 text-purple-800'
-                        ];
+                    <?php
+                    $letter_data = json_decode($letter['letter_data'], true);
+                    $type_names = [
+                        'pernyataan' => 'Surat Pernyataan',
+                        'izin' => 'Surat Izin',
+                        'kuasa' => 'Surat Kuasa'
+                    ];
+                    $type_colors = [
+                        'pernyataan' => 'bg-blue-100 text-blue-800',
+                        'izin' => 'bg-green-100 text-green-800',
+                        'kuasa' => 'bg-purple-100 text-purple-800'
+                    ];
                     ?>
                     <div class="letter-card bg-white rounded-xl shadow-lg p-6">
                         <div class="flex justify-between items-start mb-4">
@@ -292,23 +295,23 @@ try {
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            
+
                             <div class="flex space-x-2 ml-4">
-                                <button onclick="viewLetter(<?php echo $letter['id']; ?>)" 
-                                        class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <button onclick="viewLetter(<?php echo $letter['id']; ?>)"
+                                    class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
                                     <i class="fas fa-eye mr-1"></i>Lihat
                                 </button>
-                                <button onclick="regeneratePDF(<?php echo $letter['id']; ?>)" 
-                                        class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <button onclick="regeneratePDF(<?php echo $letter['id']; ?>)"
+                                    class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
                                     <i class="fas fa-download mr-1"></i>Unduh
                                 </button>
-                                <button onclick="deleteLetter(<?php echo $letter['id']; ?>)" 
-                                        class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm">
+                                <button onclick="deleteLetter(<?php echo $letter['id']; ?>)"
+                                    class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm">
                                     <i class="fas fa-trash mr-1"></i>Hapus
                                 </button>
                             </div>
                         </div>
-                        
+
                         <?php if ($letter['file_size']): ?>
                             <div class="text-xs text-gray-500">
                                 <i class="fas fa-file-pdf mr-1"></i>
@@ -324,22 +327,22 @@ try {
                 <div class="mt-8 flex justify-center">
                     <nav class="flex space-x-2">
                         <?php if ($page > 1): ?>
-                            <a href="?page=<?php echo $page - 1; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>" 
-                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <a href="?page=<?php echo $page - 1; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>"
+                                class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
-                            <a href="?page=<?php echo $i; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>" 
-                               class="px-3 py-2 border rounded-lg transition-colors <?php echo $i === $page ? 'bg-purple-600 text-white border-purple-600' : 'bg-white border-gray-300 hover:bg-gray-50'; ?>">
+                            <a href="?page=<?php echo $i; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>"
+                                class="px-3 py-2 border rounded-lg transition-colors <?php echo $i === $page ? 'bg-purple-600 text-white border-purple-600' : 'bg-white border-gray-300 hover:bg-gray-50'; ?>">
                                 <?php echo $i; ?>
                             </a>
                         <?php endfor; ?>
-                        
+
                         <?php if ($page < $total_pages): ?>
-                            <a href="?page=<?php echo $page + 1; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>" 
-                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <a href="?page=<?php echo $page + 1; ?>&type=<?php echo $filter_type; ?>&date=<?php echo $filter_date; ?>&search=<?php echo urlencode($search); ?>"
+                                class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         <?php endif; ?>
@@ -412,4 +415,5 @@ try {
         });
     </script>
 </body>
+
 </html>

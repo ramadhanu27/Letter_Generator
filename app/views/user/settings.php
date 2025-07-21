@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../app/models/User.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/app/models/User.php';
 
 // Require login
 User::requireLogin();
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Token keamanan tidak valid. Silakan refresh halaman.';
     } else {
         $action = $_POST['action'] ?? '';
-        
+
         if ($action === 'update_profile') {
             $data = [
                 'full_name' => sanitizeInput($_POST['full_name'] ?? ''),
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'province' => sanitizeInput($_POST['province'] ?? ''),
                 'postal_code' => sanitizeInput($_POST['postal_code'] ?? '')
             ];
-            
+
             $result = $user->updateProfile($current_user['id'], $data);
             if ($result['success']) {
                 $success_message = $result['message'];
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $current_password = $_POST['current_password'] ?? '';
             $new_password = $_POST['new_password'] ?? '';
             $confirm_password = $_POST['confirm_password'] ?? '';
-            
+
             if ($new_password !== $confirm_password) {
                 $error_message = 'Konfirmasi password baru tidak cocok.';
             } else {
@@ -63,14 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'auto_save' => isset($_POST['auto_save']),
                 'default_letter_type' => $_POST['default_letter_type'] ?? 'pernyataan'
             ];
-            
+
             try {
                 $database = new Database();
                 $conn = $database->getConnection();
-                
+
                 $stmt = $conn->prepare("UPDATE user_profiles SET preferences = ? WHERE user_id = ?");
                 $result = $stmt->execute([json_encode($preferences), $current_user['id']]);
-                
+
                 if ($result) {
                     $success_message = 'Preferensi berhasil diperbarui.';
                     $user_data = $user->getUserById($current_user['id']); // Refresh data
@@ -89,6 +89,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,6 +102,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
@@ -112,7 +114,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                         <span class="text-white text-xl font-bold">Letter Generator</span>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-white hover:text-blue-200 transition-colors">
                         <i class="fas fa-home mr-1"></i>Dashboard
@@ -176,66 +178,66 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                 <form method="POST" class="space-y-6">
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <input type="hidden" name="action" value="update_profile">
-                    
+
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
-                            <input type="text" name="full_name" value="<?php echo htmlspecialchars($user_data['full_name'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <input type="text" name="full_name" value="<?php echo htmlspecialchars($user_data['full_name'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                            <input type="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100" readonly>
                             <p class="text-xs text-gray-500 mt-1">Email tidak dapat diubah</p>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
-                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user_data['phone'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user_data['phone'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Organisasi/Perusahaan</label>
-                            <input type="text" name="organization" value="<?php echo htmlspecialchars($user_data['organization'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="organization" value="<?php echo htmlspecialchars($user_data['organization'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jabatan</label>
-                            <input type="text" name="position" value="<?php echo htmlspecialchars($user_data['position'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="position" value="<?php echo htmlspecialchars($user_data['position'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Kota</label>
-                            <input type="text" name="city" value="<?php echo htmlspecialchars($user_data['city'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="city" value="<?php echo htmlspecialchars($user_data['city'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
-                        <textarea name="address" rows="3" 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?php echo htmlspecialchars($user_data['address'] ?? ''); ?></textarea>
+                        <textarea name="address" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?php echo htmlspecialchars($user_data['address'] ?? ''); ?></textarea>
                     </div>
-                    
+
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Provinsi</label>
-                            <input type="text" name="province" value="<?php echo htmlspecialchars($user_data['province'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="province" value="<?php echo htmlspecialchars($user_data['province'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Kode Pos</label>
-                            <input type="text" name="postal_code" value="<?php echo htmlspecialchars($user_data['postal_code'] ?? ''); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="postal_code" value="<?php echo htmlspecialchars($user_data['postal_code'] ?? ''); ?>"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-end">
                         <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                             <i class="fas fa-save mr-2"></i>Simpan Perubahan
@@ -250,26 +252,26 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                 <form method="POST" class="space-y-6 max-w-md">
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <input type="hidden" name="action" value="change_password">
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi Saat Ini</label>
                         <input type="password" name="current_password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi Baru</label>
                         <input type="password" name="new_password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <p class="text-xs text-gray-500 mt-1">Minimal 8 karakter dengan huruf besar, kecil, dan angka</p>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Kata Sandi Baru</label>
                         <input type="password" name="confirm_password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                    
+
                     <div class="flex justify-end">
                         <button type="submit" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors">
                             <i class="fas fa-key mr-2"></i>Ubah Kata Sandi
@@ -284,7 +286,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                 <form method="POST" class="space-y-6">
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <input type="hidden" name="action" value="update_preferences">
-                    
+
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tema</label>
@@ -293,7 +295,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <option value="dark" <?php echo ($preferences['theme'] ?? 'light') === 'dark' ? 'selected' : ''; ?>>Gelap</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Bahasa</label>
                             <select name="language" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -301,7 +303,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <option value="en" <?php echo ($preferences['language'] ?? 'id') === 'en' ? 'selected' : ''; ?>>English</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Surat Default</label>
                             <select name="default_letter_type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -311,27 +313,27 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="space-y-4">
                         <div class="flex items-center">
-                            <input type="checkbox" name="notifications" id="notifications" 
-                                   <?php echo ($preferences['notifications'] ?? true) ? 'checked' : ''; ?>
-                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <input type="checkbox" name="notifications" id="notifications"
+                                <?php echo ($preferences['notifications'] ?? true) ? 'checked' : ''; ?>
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label for="notifications" class="ml-2 block text-sm text-gray-900">
                                 Aktifkan notifikasi
                             </label>
                         </div>
-                        
+
                         <div class="flex items-center">
-                            <input type="checkbox" name="auto_save" id="auto_save" 
-                                   <?php echo ($preferences['auto_save'] ?? false) ? 'checked' : ''; ?>
-                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <input type="checkbox" name="auto_save" id="auto_save"
+                                <?php echo ($preferences['auto_save'] ?? false) ? 'checked' : ''; ?>
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label for="auto_save" class="ml-2 block text-sm text-gray-900">
                                 Simpan otomatis draft surat
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-end">
                         <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-save mr-2"></i>Simpan Preferensi
@@ -348,16 +350,16 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
             });
-            
+
             // Remove active state from all tabs
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('border-blue-500', 'text-blue-600');
                 button.classList.add('border-transparent', 'text-gray-500');
             });
-            
+
             // Show selected tab content
             document.getElementById('content-' + tabName).classList.remove('hidden');
-            
+
             // Add active state to selected tab
             const activeTab = document.getElementById('tab-' + tabName);
             activeTab.classList.remove('border-transparent', 'text-gray-500');
@@ -365,4 +367,5 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
         }
     </script>
 </body>
+
 </html>

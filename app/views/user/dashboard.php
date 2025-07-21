@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../app/models/User.php';
+// Use absolute path from document root
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/app/models/User.php';
 
 // Require login
 User::requireLogin();
@@ -12,12 +13,13 @@ $user_data = $user->getUserById($current_user['id']);
 // Handle logout
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     $user->logout();
-    header('Location: login.php');
+    header('Location: /surat/login');
     exit;
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +32,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
@@ -41,24 +44,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
                         <span class="text-white text-xl font-bold">Letter Generator</span>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <div class="text-white">
                         <span class="text-sm">Selamat datang, </span>
                         <span class="font-semibold"><?php echo htmlspecialchars($current_user['full_name']); ?></span>
                     </div>
-                    
+
                     <div class="relative">
                         <button onclick="toggleDropdown()" class="flex items-center text-white hover:text-blue-200 transition-colors">
                             <i class="fas fa-user-circle text-2xl"></i>
                             <i class="fas fa-chevron-down ml-1 text-sm"></i>
                         </button>
-                        
+
                         <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                            <a href="profile.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition-colors">
+                            <a href="/surat/profile" class="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition-colors">
                                 <i class="fas fa-user mr-2"></i>Profil
                             </a>
-                            <a href="settings.php" class="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition-colors">
+                            <a href="/surat/settings" class="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition-colors">
                                 <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
                             <hr class="my-2">
@@ -92,7 +95,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         <!-- Quick Actions -->
         <div class="grid md:grid-cols-3 gap-6 mb-8">
             <!-- Create New Letter -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='app.php'">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='/surat/app'">
                 <div class="flex items-center justify-between mb-4">
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <i class="fas fa-plus text-2xl text-blue-600"></i>
@@ -104,7 +107,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             </div>
 
             <!-- My Templates -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='templates.php'">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='/surat/templates'">
                 <div class="flex items-center justify-between mb-4">
                     <div class="bg-green-100 p-3 rounded-lg">
                         <i class="fas fa-bookmark text-2xl text-green-600"></i>
@@ -116,7 +119,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             </div>
 
             <!-- History -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='history.php'">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="window.location.href='/surat/history'">
                 <div class="flex items-center justify-between mb-4">
                     <div class="bg-purple-100 p-3 rounded-lg">
                         <i class="fas fa-history text-2xl text-purple-600"></i>
@@ -184,7 +187,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             <h3 class="text-xl font-semibold text-gray-900 mb-4">
                 <i class="fas fa-clock mr-2 text-gray-600"></i>Aktivitas Terbaru
             </h3>
-            
+
             <div class="space-y-4">
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div class="flex items-center">
@@ -198,7 +201,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
                     </div>
                     <span class="text-sm text-gray-500">Baru saja</span>
                 </div>
-                
+
                 <div class="text-center py-8 text-gray-500">
                     <i class="fas fa-inbox text-4xl mb-4"></i>
                     <p>Belum ada aktivitas lainnya</p>
@@ -214,10 +217,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             <div class="flex justify-between items-center">
                 <p class="text-gray-600">&copy; 2025 Indonesian PDF Letter Generator. All rights reserved.</p>
                 <div class="flex space-x-4">
-                    <a href="help.php" class="text-gray-600 hover:text-blue-600 transition-colors">
+                    <a href="/surat/help" class="text-gray-600 hover:text-blue-600 transition-colors">
                         <i class="fas fa-question-circle mr-1"></i>Bantuan
                     </a>
-                    <a href="contact.php" class="text-gray-600 hover:text-blue-600 transition-colors">
+                    <a href="/surat/contact" class="text-gray-600 hover:text-blue-600 transition-colors">
                         <i class="fas fa-envelope mr-1"></i>Kontak
                     </a>
                 </div>
@@ -235,7 +238,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('userDropdown');
             const button = event.target.closest('button');
-            
+
             if (!button || !button.onclick) {
                 dropdown.classList.add('hidden');
             }
@@ -261,4 +264,5 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         }, 100);
     </script>
 </body>
+
 </html>

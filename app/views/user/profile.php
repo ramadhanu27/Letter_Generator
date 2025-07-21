@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../app/models/User.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/surat/app/models/User.php';
 
 // Require login
 User::requireLogin();
@@ -13,22 +13,22 @@ $user_data = $user->getUserById($current_user['id']);
 try {
     $database = new Database();
     $conn = $database->getConnection();
-    
+
     // Count generated letters
     $stmt = $conn->prepare("SELECT COUNT(*) as total_letters FROM generated_letters WHERE user_id = ?");
     $stmt->execute([$current_user['id']]);
     $letter_stats = $stmt->fetch();
-    
+
     // Count saved templates
     $stmt = $conn->prepare("SELECT COUNT(*) as total_templates FROM saved_templates WHERE user_id = ?");
     $stmt->execute([$current_user['id']]);
     $template_stats = $stmt->fetch();
-    
+
     // Get recent activity
     $stmt = $conn->prepare("SELECT * FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
     $stmt->execute([$current_user['id']]);
     $recent_activities = $stmt->fetchAll();
-    
+
     // Get letter type statistics
     $stmt = $conn->prepare("
         SELECT letter_type, COUNT(*) as count 
@@ -38,7 +38,6 @@ try {
     ");
     $stmt->execute([$current_user['id']]);
     $letter_type_stats = $stmt->fetchAll();
-    
 } catch (Exception $e) {
     $letter_stats = ['total_letters' => 0];
     $template_stats = ['total_templates' => 0];
@@ -50,6 +49,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,14 +60,17 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .stat-card {
             transition: transform 0.2s ease-in-out;
         }
+
         .stat-card:hover {
             transform: translateY(-2px);
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
@@ -79,7 +82,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                         <span class="text-white text-xl font-bold">Letter Generator</span>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.php" class="text-white hover:text-blue-200 transition-colors">
                         <i class="fas fa-home mr-1"></i>Dashboard
@@ -129,7 +132,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                             <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user_data['organization']); ?></p>
                         <?php endif; ?>
                     </div>
-                    
+
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="space-y-3">
                             <?php if ($user_data['phone']): ?>
@@ -138,19 +141,19 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                     <span class="ml-2"><?php echo htmlspecialchars($user_data['phone']); ?></span>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <?php if ($user_data['city']): ?>
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
                                     <span class="ml-2"><?php echo htmlspecialchars($user_data['city']); ?></span>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <div class="flex items-center text-sm">
                                 <i class="fas fa-calendar text-gray-400 w-5"></i>
                                 <span class="ml-2">Bergabung <?php echo date('d M Y', strtotime($user_data['created_at'])); ?></span>
                             </div>
-                            
+
                             <?php if ($user_data['last_login']): ?>
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-clock text-gray-400 w-5"></i>
@@ -159,7 +162,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                             <?php endif; ?>
                         </div>
                     </div>
-                    
+
                     <div class="mt-6">
                         <a href="settings.php" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center block">
                             <i class="fas fa-edit mr-2"></i>Edit Profil
@@ -183,7 +186,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                         <div class="flex items-center">
                             <div class="p-3 bg-green-100 rounded-lg">
@@ -208,15 +211,13 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <div class="w-3 h-3 rounded-full mr-3 
-                                            <?php 
-                                                echo $stat['letter_type'] === 'pernyataan' ? 'bg-blue-500' : 
-                                                    ($stat['letter_type'] === 'izin' ? 'bg-green-500' : 'bg-purple-500'); 
+                                            <?php
+                                            echo $stat['letter_type'] === 'pernyataan' ? 'bg-blue-500' : ($stat['letter_type'] === 'izin' ? 'bg-green-500' : 'bg-purple-500');
                                             ?>">
                                         </div>
                                         <span class="text-sm text-gray-700">
-                                            <?php 
-                                                echo $stat['letter_type'] === 'pernyataan' ? 'Surat Pernyataan' : 
-                                                    ($stat['letter_type'] === 'izin' ? 'Surat Izin' : 'Surat Kuasa'); 
+                                            <?php
+                                            echo $stat['letter_type'] === 'pernyataan' ? 'Surat Pernyataan' : ($stat['letter_type'] === 'izin' ? 'Surat Izin' : 'Surat Kuasa');
                                             ?>
                                         </span>
                                     </div>
@@ -232,7 +233,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
                         <i class="fas fa-history mr-2 text-orange-600"></i>Aktivitas Terbaru
                     </h3>
-                    
+
                     <?php if (!empty($recent_activities)): ?>
                         <div class="space-y-4">
                             <?php foreach ($recent_activities as $activity): ?>
@@ -244,16 +245,16 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm text-gray-900">
-                                            <?php 
-                                                $action_text = [
-                                                    'user_login' => 'Login ke sistem',
-                                                    'user_logout' => 'Logout dari sistem',
-                                                    'user_registered' => 'Mendaftar akun baru',
-                                                    'profile_updated' => 'Memperbarui profil',
-                                                    'password_changed' => 'Mengubah kata sandi',
-                                                    'letter_generated' => 'Membuat surat baru'
-                                                ];
-                                                echo $action_text[$activity['action']] ?? $activity['action'];
+                                            <?php
+                                            $action_text = [
+                                                'user_login' => 'Login ke sistem',
+                                                'user_logout' => 'Logout dari sistem',
+                                                'user_registered' => 'Mendaftar akun baru',
+                                                'profile_updated' => 'Memperbarui profil',
+                                                'password_changed' => 'Mengubah kata sandi',
+                                                'letter_generated' => 'Membuat surat baru'
+                                            ];
+                                            echo $action_text[$activity['action']] ?? $activity['action'];
                                             ?>
                                         </p>
                                         <p class="text-xs text-gray-500">
@@ -266,7 +267,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                     <?php else: ?>
                         <p class="text-gray-500 text-center py-4">Belum ada aktivitas</p>
                     <?php endif; ?>
-                    
+
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <a href="history.php" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
                             Lihat semua aktivitas <i class="fas fa-arrow-right ml-1"></i>
@@ -279,7 +280,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
                         <i class="fas fa-bolt mr-2 text-yellow-600"></i>Aksi Cepat
                     </h3>
-                    
+
                     <div class="grid md:grid-cols-2 gap-4">
                         <a href="app.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="p-2 bg-blue-100 rounded-lg mr-3">
@@ -290,7 +291,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <p class="text-sm text-gray-500">Mulai membuat surat</p>
                             </div>
                         </a>
-                        
+
                         <a href="templates.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="p-2 bg-green-100 rounded-lg mr-3">
                                 <i class="fas fa-bookmark text-green-600"></i>
@@ -300,7 +301,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <p class="text-sm text-gray-500">Kelola template</p>
                             </div>
                         </a>
-                        
+
                         <a href="history.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="p-2 bg-purple-100 rounded-lg mr-3">
                                 <i class="fas fa-history text-purple-600"></i>
@@ -310,7 +311,7 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
                                 <p class="text-sm text-gray-500">Lihat surat yang dibuat</p>
                             </div>
                         </a>
-                        
+
                         <a href="settings.php" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="p-2 bg-orange-100 rounded-lg mr-3">
                                 <i class="fas fa-cog text-orange-600"></i>
@@ -326,4 +327,5 @@ $preferences = json_decode($user_data['preferences'] ?? '{}', true);
         </div>
     </div>
 </body>
+
 </html>

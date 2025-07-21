@@ -31,46 +31,53 @@ Deny from all
 </Files>
 
 # Protect sensitive files (but allow normal PHP execution)
+
 <Files "config.php">
-    Order allow,deny
-    Deny from all
+Order allow,deny
+Deny from all
 </Files>
 
-<Files "*.sql">
-    Order allow,deny
-    Deny from all
+<Files "\*.sql">
+Order allow,deny
+Deny from all
 </Files>
 
-<Files "*.log">
-    Order allow,deny
-    Deny from all
+<Files "\*.log">
+Order allow,deny
+Deny from all
 </Files>
 
 # Disable server signature
+
 ServerSignature Off
 
 # Disable directory browsing
+
 Options -Indexes
 
 # Prevent access to backup files
+
 <FilesMatch "\.(bak|backup|old|orig|save|swp|tmp)$">
-    Order allow,deny
-    Deny from all
+Order allow,deny
+Deny from all
 </FilesMatch>
 
 # Prevent access to version control files
+
 <FilesMatch "\.(git|svn|hg|bzr)">
-    Order allow,deny
-    Deny from all
+Order allow,deny
+Deny from all
 </FilesMatch>
 
 # Disable HTTP TRACE method
+
 <IfModule mod_rewrite.c>
     RewriteCond %{REQUEST_METHOD} ^TRACE
     RewriteRule .* - [F]
 </IfModule>
 
 # Prevent hotlinking
+
 <IfModule mod_rewrite.c>
     RewriteCond %{HTTP_REFERER} !^$
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
@@ -189,6 +196,7 @@ RewriteRule ^index\.html$ / [R=301,L]
 # Specific routes first (before general rewrite)
 
 # Special admin routes
+
 RewriteRule ^admin$ admin/index.php [L]
 RewriteRule ^admin/users$ admin/users.php [L]
 RewriteRule ^admin/logs$ admin/logs.php [L]
@@ -196,35 +204,42 @@ RewriteRule ^admin/login$ admin/login.php [L]
 RewriteRule ^admin/register$ admin/register.php [L]
 
 # Home route
+
 RewriteRule ^home$ home.php [L]
 
+# App route
+
+RewriteRule ^app$ app.php [L]
+
 # Authentication routes
+
 RewriteRule ^login$ auth/login.php [L]
 RewriteRule ^register$ auth/register.php [L]
 RewriteRule ^logout$ auth/logout.php [L]
 RewriteRule ^forgot-password$ auth/forgot_password.php [L]
 RewriteRule ^reset-password$ auth/reset_password.php [L]
 
-# User dashboard routes
-RewriteRule ^dashboard$ app/views/user/dashboard.php [L]
-RewriteRule ^profile$ app/views/user/profile.php [L]
-RewriteRule ^settings$ app/views/user/settings.php [L]
-RewriteRule ^history$ app/views/user/history.php [L]
-RewriteRule ^templates$ app/views/user/templates.php [L]
+# User dashboard routes (with proper path resolution)
+
+RewriteRule ^dashboard$ /surat/app/views/user/dashboard.php [L]
+RewriteRule ^profile$ /surat/app/views/user/profile.php [L]
+RewriteRule ^settings$ /surat/app/views/user/settings.php [L]
+RewriteRule ^history$ /surat/app/views/user/history.php [L]
+RewriteRule ^templates$ /surat/app/views/user/templates.php [L]
 
 # General rewrite rules (after specific routes)
 
 # First, redirect .php URLs to clean URLs
+
 RewriteCond %{THE_REQUEST} /([^.]+)\.php[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L]
 
 # Then, internally rewrite clean URLs to .php files
+
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^([^.]+)$ $1.php [L]
-
-
 
 # API routing
 

@@ -12,7 +12,7 @@ if (User::isLoggedIn() && !isset($_GET['force'])) {
     $_SESSION['login_redirect_count']++;
 
     if ($_SESSION['login_redirect_count'] < 3) {
-        header('Location: ../dashboard');
+        header('Location: /surat/dashboard');
         exit;
     } else {
         // Reset counter and show error
@@ -85,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Redirect based on role
                     if ($user_data['role'] === 'admin') {
-                        header('Location: ../admin');
+                        header('Location: /surat/admin');
                     } else {
-                        $redirect_url = $_GET['redirect'] ?? '../dashboard';
+                        $redirect_url = $_GET['redirect'] ?? '/surat/dashboard';
                         header("Location: $redirect_url");
                     }
                     exit;
@@ -113,14 +113,109 @@ $csrf_token = generateCSRFToken();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../public/assets/css/security-protection.css" rel="stylesheet">
     <style>
+        /* Indonesian Professional Color Scheme - Darker Palette */
+        :root {
+            --primary-blue: #1E40AF;
+            --primary-navy: #1E293B;
+            --dark-navy: #0F172A;
+            --indonesian-red: #B91C1C;
+            --golden-yellow: #D97706;
+            --emerald-green: #047857;
+            --slate-gray: #334155;
+            --cool-gray: #475569;
+            --light-gray: #F1F5F9;
+            --warm-orange: #C2410C;
+            --success-green: #15803D;
+            --warning-amber: #B45309;
+            --info-blue: #0369A1;
+            --white: #FFFFFF;
+            --black: #0F172A;
+            --text-primary: #F8FAFC;
+            --text-secondary: #E2E8F0;
+        }
+
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Darker gradient for better contrast */
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 30%, #334155 70%, #475569 100%);
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+            pointer-events: none;
+        }
+
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Ccircle cx='50' cy='50' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF, #1E293B);
+            color: var(--white);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1D4ED8, #0F172A);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(30, 64, 175, 0.4);
+            border-color: #3B82F6;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: var(--white);
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #EAB308, #CA8A04);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.4);
+            border-color: #FCD34D;
+        }
+
+        .input-field {
+            background: rgba(248, 250, 252, 0.9);
+            border: 2px solid rgba(51, 65, 85, 0.2);
+            color: var(--slate-gray);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+            outline: none;
+        }
+
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         /* ========== SECURITY PROTECTION CSS ========== */
@@ -191,19 +286,19 @@ $csrf_token = generateCSRFToken();
     </style>
 </head>
 
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
+<body class="gradient-bg hero-pattern min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md login-container">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
-                <i class="fas fa-file-pdf text-2xl text-blue-600"></i>
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-2xl mb-6" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                <i class="fas fa-file-pdf text-3xl text-white"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Letter Generator</h1>
-            <p class="text-blue-100">Masuk ke akun Anda</p>
+            <h1 class="text-4xl font-bold mb-3 text-shadow" style="color: var(--text-primary);">Letter Generator</h1>
+            <p class="text-xl" style="color: var(--text-secondary);">Masuk ke akun Anda</p>
         </div>
 
         <!-- Login Form -->
-        <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+        <div class="glass-effect rounded-3xl p-10 shadow-2xl border-2 border-white border-opacity-20">
             <?php if ($error_message): ?>
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center">
                     <i class="fas fa-exclamation-circle mr-2"></i>
@@ -223,78 +318,79 @@ $csrf_token = generateCSRFToken();
 
                 <!-- Email/Username Field -->
                 <div>
-                    <label for="email_or_username" class="block text-sm font-medium text-white mb-2">
-                        <i class="fas fa-user mr-2"></i>Email atau Username
+                    <label for="email_or_username" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                        <i class="fas fa-user mr-2" style="color: var(--primary-blue);"></i>Email atau Username
                     </label>
                     <input type="text"
                         id="email_or_username"
                         name="email_or_username"
                         value="<?php echo htmlspecialchars($_POST['email_or_username'] ?? ''); ?>"
-                        class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200"
+                        class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400"
                         placeholder="Masukkan email atau username"
                         required>
                 </div>
 
                 <!-- Password Field -->
                 <div>
-                    <label for="password" class="block text-sm font-medium text-white mb-2">
-                        <i class="fas fa-lock mr-2"></i>Password
+                    <label for="password" class="block text-sm font-semibold mb-3" style="color: var(--slate-gray);">
+                        <i class="fas fa-lock mr-2" style="color: var(--primary-blue);"></i>Password
                     </label>
                     <div class="relative">
                         <input type="password"
                             id="password"
                             name="password"
-                            class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-200 pr-12"
+                            class="input-field w-full px-5 py-4 rounded-xl text-lg font-medium placeholder-gray-400 pr-14"
                             placeholder="Masukkan password"
                             required>
                         <button type="button"
                             onclick="togglePassword()"
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-100 hover:text-white transition-colors">
-                            <i id="password-icon" class="fas fa-eye"></i>
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors"
+                            style="color: var(--slate-gray);">
+                            <i id="password-icon" class="fas fa-eye text-xl"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- Remember Me -->
                 <div class="flex items-center justify-between">
-                    <label class="flex items-center text-sm text-white">
+                    <label class="flex items-center text-sm font-medium" style="color: var(--slate-gray);">
                         <input type="checkbox"
                             name="remember_me"
-                            class="mr-2 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-blue-600 focus:ring-white focus:ring-opacity-50">
+                            class="mr-3 w-4 h-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2">
                         Ingat saya
                     </label>
-                    <a href="forgot-password" class="text-sm text-blue-100 hover:text-white transition-colors">
+                    <a href="/surat/forgot-password" class="text-sm font-medium transition-colors" style="color: var(--primary-blue);" onmouseover="this.style.color='var(--info-blue)'" onmouseout="this.style.color='var(--primary-blue)'">
                         Lupa password?
                     </a>
                 </div>
 
                 <!-- Login Button -->
                 <button type="submit"
-                    class="w-full bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200 transform hover:scale-105">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Masuk
+                    class="btn-primary w-full py-4 px-6 rounded-xl text-lg font-bold flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-3"></i>Masuk ke Akun
                 </button>
             </form>
 
             <!-- Divider -->
-            <div class="my-6 flex items-center">
-                <div class="flex-1 border-t border-white border-opacity-30"></div>
-                <span class="px-4 text-sm text-blue-100">atau</span>
-                <div class="flex-1 border-t border-white border-opacity-30"></div>
+            <div class="my-8 flex items-center">
+                <div class="flex-1 border-t-2 border-gray-300"></div>
+                <span class="px-6 text-sm font-medium" style="color: var(--slate-gray);">atau</span>
+                <div class="flex-1 border-t-2 border-gray-300"></div>
             </div>
 
             <!-- Register Link -->
             <div class="text-center">
-                <p class="text-blue-100 mb-4">Belum punya akun?</p>
-                <a href="register"
-                    class="inline-flex items-center justify-center w-full bg-transparent border-2 border-white text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200">
-                    <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
+                <p class="mb-4 text-lg" style="color: var(--slate-gray);">Belum punya akun?</p>
+                <a href="/surat/register"
+                    class="btn-secondary w-full py-4 px-6 rounded-xl text-lg font-bold flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-3"></i>Daftar Sekarang
                 </a>
             </div>
 
             <!-- Back to Home -->
-            <div class="text-center mt-6">
-                <a href="index.html" class="text-sm text-blue-100 hover:text-white transition-colors">
-                    <i class="fas fa-arrow-left mr-1"></i>Kembali ke Beranda
+            <div class="text-center mt-8">
+                <a href="/surat/home" class="text-sm font-medium transition-colors inline-flex items-center" style="color: var(--slate-gray);" onmouseover="this.style.color='var(--primary-blue)'" onmouseout="this.style.color='var(--slate-gray)'">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Beranda
                 </a>
             </div>
         </div>

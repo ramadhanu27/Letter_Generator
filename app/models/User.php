@@ -363,7 +363,7 @@ class User
     }
 
     // Require login (redirect if not logged in)
-    public static function requireLogin($redirect_url = 'login.php')
+    public static function requireLogin($redirect_url = '/surat/login')
     {
         if (!self::isLoggedIn()) {
             header("Location: $redirect_url");
